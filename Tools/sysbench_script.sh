@@ -1,51 +1,54 @@
-#!/bin/bash
+which bash
 
 # Load DB Config
-source YOUR_PATH_TO_PROJECT/db.env
+source "./db.env"
+
+# Default error and usage message
+usage() {
+    echo "Usage: $0 -out <output_dir> [-len <custom_lengths>] -script:\"<query_info>\" ..."
+    exit 1
+}
+
+# Initialize variables
+OUTPUT_DIR=""
+CUSTOM_LENGTHS=""
+QUERY_INFO=()
+NEEDS_CUSTOM_LENGTHS=false
 
 # Parse arguments
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <output_dir> [custom_lengths] <query_info> ..."
-    echo "Example 1: $0 output \"1,64\" \"dir_path/int_queries:false\" \"dir_path/varchar_queries:true\""
-    echo "Example 2: $0 output \"dir_path/int_queries\" \"dir_path/varchar_queries\""
-fi
-
-OUTPUT_DIR="$1"
-CUSTOM_LENGTHS=""
-QUERY_INFO=("${@:2}")
-
-if [[ ! "${QUERY_INFO[0]}" == *:* ]]; then
-    CUSTOM_LENGTHS="${QUERY_INFO[0]}"
-    QUERY_INFO=("${@:3}")
-fi
-
-# Process QUERY_INFO to detect if lengths are required
-NEEDS_CUSTOM_LENGTHS=false
-for INFO in "${QUERY_INFO[@]}"; do
-    if [[ "$INFO" != *:* ]]; then
-        INFO="${INFO}:false"
-    fi
-    if [[ "$INFO" == *":true"* ]]; then
-        NEEDS_CUSTOM_LENGTHS=true
-    fi
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -out) OUTPUT_DIR="$2"; shift 2 ;;
+        -len) CUSTOM_LENGTHS="$2"; shift 2 ;;
+        -script:*) QUERY_INFO+=("${1#-script:}"); shift ;;
+        *) usage ;;
+    esac
 done
 
-if $NEEDS_CUSTOM_LENGTHS && [ -z "$CUSTOM_LENGTHS" ]; then
-    echo "Error: CUSTOM_LENGTHS is required because at least one QUERY_INFO has :true"
-    exit 1
-fi
+# Validation
+[ -z "$OUTPUT_DIR" ] && usage
+[ "${#QUERY_INFO[@]}" -eq 0 ] && usage
+
+# Process QUERY_INFO
+for INFO in "${QUERY_INFO[@]}"; do
+    [[ "$INFO" != *:* ]] && INFO="${INFO}:false"
+    [[ "$INFO" == *":true"* ]] && NEEDS_CUSTOM_LENGTHS=true
+done
+
+# Check CUSTOM_LENGTHS requirement
+$NEEDS_CUSTOM_LENGTHS && [ -z "$CUSTOM_LENGTHS" ] && { echo "Error: -len is required with :true queries"; exit 1; }
 
 # File Paths
-PYHTON_PATH="YOUR_PATH_TO_PROJECT/Tools/Python"
+PYTHON_PATH="./Tools/Python" 
 OUTPUT_FILE="$OUTPUT_DIR/sysbench_output.csv"
 OUTPUT_FILE_INOFFICIAL="$OUTPUT_DIR/sysbench_output_inofficial.csv"
 STATISTICS_OUTPUT_FILE="$OUTPUT_DIR/statistics.csv"
 
 # Sysbench configuration
-TIME=32
-THREADS=8
+TIME=18
+THREADS=4
 EVENTS=0
-REPORT_INTERVAL=4
+REPORT_INTERVAL=2
 
 # Ensure output directories exist
 rm -rf "$OUTPUT_DIR"
@@ -89,6 +92,8 @@ run_sysbench() {
   local MODE="$2"
   local LOG_FILE="$3"
 
+  echo "Running $LUA_SCRIPT_PATH with port $DB_PORT and host $DB_HOST"
+
   sysbench \
     --db-driver=mysql \
     --mysql-host="$DB_HOST" \
@@ -102,6 +107,8 @@ run_sysbench() {
     --report-interval=$REPORT_INTERVAL \
     "$LUA_SCRIPT_PATH" "$MODE" >> "$LOG_FILE" 2>&1
 
+    echo "Log file content:"
+    cat "$LOG_FILE"
   return $?
 }
 
@@ -234,9 +241,9 @@ for INFO in "${QUERY_INFO[@]}"; do
   fi
 done
 
-python3 "$PYHTON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE"
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE"
 echo "Combined CSV file created at $OUTPUT_FILE"
 
 # Generate plot after all tasks are completed
 echo "Generating plots..."
-python3 "$PYHTON_PATH/generatePlot.py" "$OUTPUT_FILE"
+python3 "$PYTHON_PATH/generatePlot.py" "$OUTPUT_FILE"

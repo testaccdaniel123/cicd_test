@@ -23,9 +23,9 @@ Untersucht werden:
 cd ../../..
 cd Tools
 ./sysbench_script.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Output/selectivity_changes \
-  "10,100,500" \
-  "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Scripts/selectivity_changes:true" 
+  -out "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Output/selectivity_changes" \
+  -len "10,100,500" \
+  -script:"YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Scripts/selectivity_changes:true" 
 ```
 
 ### Code unterschiedliche Select - Queries
@@ -33,6 +33,6 @@ cd Tools
 cd ../../..
 cd Tools
 ./sysbench_script.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Output/query_differences \
- "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Scripts/query_differences:false" 
+  -out "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Output/query_differences" \
+  -script:"YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Scripts/query_differences:false" 
 ```
