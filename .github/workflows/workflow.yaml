@@ -1,7 +1,12 @@
 name: Benchmark Workflow
 
 on:
-  workflow_dispatch
+  push:
+    paths:
+      - 'Projects/**'
+      - 'Tools/**'
+      - '.github/**'
+  workflow_dispatch:
 
 jobs:
   benchmark:
@@ -11,15 +16,20 @@ jobs:
         test-type: [high-count, low-count, b-tree-query-differences, selectivity-change, hash-query-differences, join-type]
 
     env:
-      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_USER: ${{ secrets.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
-      DB_PORT: 3306
+      DB_NAME: ${{ secrets.DB_NAME }}
+      TIME: 18
+      THREADS: 4
+      EVENTS: 0
+      REPORT_INTERVAL: 2
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Cache pip dependencies
       - name: Cache pip dependencies
         uses: actions/cache@v3
         with:
@@ -28,7 +38,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -36,7 +45,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas matplotlib
 
-      # Start MySQL container
       - name: Start MySQL container
         run: |
           docker run --name mysql-${{ matrix.test-type }} -d \
@@ -47,7 +55,7 @@ jobs:
           echo "Waiting for MySQL..."
           until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
           echo "MySQL is ready!"
-      # Run sysbench script based on test type
+
       - name: Run sysbench script
         run: |
           chmod +x Tools/sysbench_script.sh
@@ -65,7 +73,7 @@ jobs:
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
           elif [ "${{ matrix.test-type }}" == "b-tree-query-differences" ]; then
             Tools/sysbench_script.sh \
-            -out "./Projects/Index/B_Tree/Output/query_differences" \
+            -out "./Output/B_Tree/query_differences" \
             -script:"./Projects/Index/B_Tree/Scripts/query_differences:false"
           elif [ "${{ matrix.test-type }}" == "selectivity-change" ]; then
             Tools/sysbench_script.sh \
@@ -83,12 +91,12 @@ jobs:
               -script:"./Projects/Join_Typ/Scripts/int_queries:false" \
               -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"          
           fi
-      # Stop MySQL container
+
       - name: Stop MySQL container
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
-      # Upload artifact
+
       - name: Upload output
         if: always()
         uses: actions/upload-artifact@v3

@@ -1,11 +1,24 @@
 which bash
 
-# Load DB Config
-source "./db.env"
+if [ -n "$GITHUB_ACTIONS" ]; then
+    ENV_PATH="./db.env"
+    PYTHON_PATH="./Tools/Python"
+else
+    ENV_PATH="YOUR_PATH_TO_PROJECT/db.env"
+    PYTHON_PATH="YOUR_PATH_TO_PROJECT/Tools/Python"
+fi
 
-# Default error and usage message
+# Load environment variables
+if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ] || [ -z "$DB_NAME" ]; then
+    if [ -f "$ENV_PATH" ]; then
+        # shellcheck source=/path/to/your/env/file
+        source "$ENV_PATH"
+    fi
+fi
+
+# Display usage instructions
 usage() {
-    echo "Usage: $0 -out <output_dir> [-len <custom_lengths>] -script:\"<query_info>\" ..."
+    echo "Usage: $0 -out <output_dir> [-len <custom_lengths>] -script:\"<query_info>\" [...]"
     exit 1
 }
 
@@ -25,30 +38,31 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validation
-[ -z "$OUTPUT_DIR" ] && usage
-[ "${#QUERY_INFO[@]}" -eq 0 ] && usage
+# Validate required arguments
+if [ -z "$OUTPUT_DIR" ] || [ "${#QUERY_INFO[@]}" -eq 0 ]; then
+    usage
+fi
 
-# Process QUERY_INFO
+# Handle queries with ":true" flag (requires custom lengths)
 for INFO in "${QUERY_INFO[@]}"; do
-    [[ "$INFO" != *:* ]] && INFO="${INFO}:false"
     [[ "$INFO" == *":true"* ]] && NEEDS_CUSTOM_LENGTHS=true
 done
 
-# Check CUSTOM_LENGTHS requirement
-$NEEDS_CUSTOM_LENGTHS && [ -z "$CUSTOM_LENGTHS" ] && { echo "Error: -len is required with :true queries"; exit 1; }
+if $NEEDS_CUSTOM_LENGTHS && [ -z "$CUSTOM_LENGTHS" ]; then
+    echo "Error: -len is required for queries marked with :true"
+    exit 1
+fi
 
-# File Paths
-PYTHON_PATH="./Tools/Python" 
+# Define file paths
 OUTPUT_FILE="$OUTPUT_DIR/sysbench_output.csv"
 OUTPUT_FILE_INOFFICIAL="$OUTPUT_DIR/sysbench_output_inofficial.csv"
 STATISTICS_OUTPUT_FILE="$OUTPUT_DIR/statistics.csv"
 
 # Sysbench configuration
-TIME=18
-THREADS=4
-EVENTS=0
-REPORT_INTERVAL=2
+TIME=${TIME:-32}
+THREADS=${THREADS:-8}
+EVENTS=${EVENTS:-0}
+REPORT_INTERVAL=${REPORT_INTERVAL:-4}
 
 # Ensure output directories exist
 rm -rf "$OUTPUT_DIR"
@@ -65,7 +79,7 @@ run_benchmark() {
   local SCRIPT_NAME="$4"
 
   if [[ -n "$SCRIPT_NAME" ]]; then
-      echo "Running $(basename "$SCRIPT_PATH")..."
+      echo "Running $(basename "$SCRIPT_PATH") for $TIME seconds ..."
   fi
   if [[ "$MODE" == "prepare" ]]; then
       length=$(basename "$OUTPUT_FILE" | grep -o '[0-9]*')
@@ -92,8 +106,6 @@ run_sysbench() {
   local MODE="$2"
   local LOG_FILE="$3"
 
-  echo "Running $LUA_SCRIPT_PATH with port $DB_PORT and host $DB_HOST"
-
   sysbench \
     --db-driver=mysql \
     --mysql-host="$DB_HOST" \
@@ -107,8 +119,6 @@ run_sysbench() {
     --report-interval=$REPORT_INTERVAL \
     "$LUA_SCRIPT_PATH" "$MODE" >> "$LOG_FILE" 2>&1
 
-    echo "Log file content:"
-    cat "$LOG_FILE"
   return $?
 }
 

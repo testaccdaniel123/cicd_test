@@ -54,7 +54,7 @@ Führe das folgende Script aus, um die Benchmarks mit den korrekten Pfaden und P
 1. Navigiere in das Verzeichnis `Tools`, wo sich das Script befindet.
 2. Führe das Script `sysbench_script.sh` aus und übergebe die erforderlichen Parameter.
 
-### Code - Beispiel:
+### Code für Join Type - Vergleich:
 
 ```bash
 cd ../..
