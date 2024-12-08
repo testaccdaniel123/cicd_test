@@ -30,7 +30,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Map patterns for matrix values
       - name: Set directory patterns
         id: set_patterns
         run: |
@@ -47,16 +46,13 @@ jobs:
           PATTERN=${patterns[${{ matrix.test-type }}]}
           echo "patterns=${PATTERN}" >> $GITHUB_ENV
 
-      # Calculate hash for the directories specified by the patterns
       - name: Calculate hash of directories
         id: calculate_hash
         run: |
-          # Find all files recursively, sort by name, and calculate hash with file contents and paths
           HASH=$(find $patterns -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
           echo "Calculated hash: $HASH"
           echo "hash=$HASH" >> $GITHUB_ENV
 
-      # Restore cached output if it exists
       - name: Restore cached output
         id: restore_cache
         uses: actions/cache@v3
@@ -64,19 +60,9 @@ jobs:
           path: ./Output/${{ matrix.test-type }}
           key: output-${{ matrix.test-type }}-${{ env.hash }}
 
-      # Determine whether to skip script execution based on cache existence
       - name: Should run check
-        id: should_run
-        run: |
-          if [ -d "./Output/${{ matrix.test-type }}" ]; then
-            echo "Cache exists. Skipping script execution."
-            echo "should_run=false" >> $GITHUB_ENV
-          else
-            echo "No cache found. Will execute the script."
-            echo "should_run=true" >> $GITHUB_ENV
-          fi
+        run: echo "should_run=$( [ -d "./Output/${{ matrix.test-type }}" ] && echo false || echo true )" >> $GITHUB_ENV
 
-      # Install dependencies if needed
       - name: Install dependencies
         if: env.should_run == 'true'
         run: |
@@ -85,7 +71,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas matplotlib
 
-      # Start MySQL container if running
       - name: Start MySQL container
         if: env.should_run == 'true'
         run: |
@@ -98,7 +83,6 @@ jobs:
           until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
           echo "MySQL is ready!"
 
-      # Run the main script if changes were detected
       - name: Run sysbench script
         if: env.should_run == 'true'
         run: |
@@ -136,14 +120,12 @@ jobs:
               -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"          
           fi
 
-      # Stop MySQL container if changes were detected
       - name: Stop MySQL container
         if: env.should_run == 'true'
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
-      # Save output to cache if changes were detected
       - name: Save output to cache
         if: env.should_run == 'true'
         uses: actions/cache@v3
@@ -151,7 +133,6 @@ jobs:
           path: ./Output/${{ matrix.test-type }}
           key: output-${{ matrix.test-type }}-${{ env.hash }}
 
-      # Upload all (still use artifact for combined output)
       - name: Upload all
         uses: actions/upload-artifact@v3
         with:
