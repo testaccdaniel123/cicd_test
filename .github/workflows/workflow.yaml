@@ -27,22 +27,52 @@ jobs:
       REPORT_INTERVAL: 1
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
       # Fetch changes
-      - name: Fetch and Detect Changes
+      - name: Detect Changed Files
         id: changes
         run: |
           git fetch origin main
           CHANGED_FILES=$(git diff --name-only HEAD..origin/main)
           echo "Changed files: $CHANGED_FILES"
-          if echo "$CHANGED_FILES" | grep -qE 'Projects/.*|Tools/.*|.github/.*'; then
-            echo "Daniel detected"
+
+          # Define the mapping for each test-type to the required file patterns
+          declare -A patterns
+          patterns=( 
+            ["high-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+            ["low-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+            ["b-tree-query-differences"]="./Projects/Index/B_Tree/Scripts/query_differences:false"
+            ["selectivity-change"]="./Projects/Index/Hash/Scripts/selectivity_changes:true"
+            ["hash-query-differences"]="./Projects/Index/Hash/Scripts/query_differences:false"
+            ["join-type"]="./Projects/Join_Typ/Scripts/int_queries:false ./Projects/Join_Typ/Scripts/varchar_queries:true"
+          )
+
+          # Dynamically check based on the test type and patterns
+          required_files="${patterns[${{ matrix.test-type }}]}"
+
+          # Check if required file changes are detected
+          detected=false
+          for pattern in $required_files; do
+            if echo "$CHANGED_FILES" | grep -q "$pattern"; then
+              echo "daniel detected"
+              detected=true
+            else
+              echo "daniel not detected"
+              detected=false
+              break
+            fi
+          done
+
+          # Set the environment variable accordingly
+          if [ "$detected" = true ]; then
             echo "changes_detected=true" >> $GITHUB_ENV
           else
-            echo "Daniel not detected"
             echo "changes_detected=false" >> $GITHUB_ENV
           fi
 
-      # Conditional caching and dependency install only when changes are detected
+          echo "Changes detected logic executed."
+
       - name: Cache pip dependencies
         if: env.changes_detected == 'true'
         uses: actions/cache@v3
@@ -60,7 +90,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas matplotlib
 
-      # Dynamically initialize MySQL only when changes are detected
       - name: Start MySQL container
         if: env.changes_detected == 'true'
         run: |
@@ -68,12 +97,11 @@ jobs:
             -e MYSQL_ROOT_PASSWORD=$DB_PASS \
             -e MYSQL_DATABASE=$DB_NAME \
             -p $DB_PORT:3306 mysql:8.0
-          
+
           echo "Waiting for MySQL..."
           until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
           echo "MySQL is ready!"
 
-      # Execute the relevant sysbench script
       - name: Run sysbench script
         if: env.changes_detected == 'true'
         run: |
@@ -84,16 +112,39 @@ jobs:
               -len "500,5000" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+          elif [ "${{ matrix.test-type }}" == "low-count" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/B_Tree/low_counts" \
+              -len "10,50" \
+              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
+              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+          elif [ "${{ matrix.test-type }}" == "b-tree-query-differences" ]; then
+            Tools/sysbench_script.sh \
+            -out "./Output/B_Tree/query_differences" \
+            -script:"./Projects/Index/B_Tree/Scripts/query_differences:false"
+          elif [ "${{ matrix.test-type }}" == "selectivity-change" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/Hash/selectivity_changes" \
+              -len "10,100,500" \
+              -script:"./Projects/Index/Hash/Scripts/selectivity_changes:true"         
+          elif [ "${{ matrix.test-type }}" == "hash-query-differences" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/Hash/query_differences" \
+              -script:"./Projects/Index/Hash/Scripts/query_differences:false"
+          elif [ "${{ matrix.test-type }}" == "join-type" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/Join_Typ" \
+              -len "1,64" \
+              -script:"./Projects/Join_Typ/Scripts/int_queries:false" \
+              -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"          
           fi
 
-      # Stop MySQL container after tests
       - name: Stop MySQL container
         if: env.changes_detected == 'true'
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
-      # Upload artifacts always
       - name: Upload output
         if: env.changes_detected == 'true'
         uses: actions/upload-artifact@v3
