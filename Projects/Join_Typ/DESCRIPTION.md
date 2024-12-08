@@ -12,8 +12,8 @@ Die Tabelle enthält Informationen zu Kunden:
 
 ```sql
 CREATE TABLE IF NOT EXISTS KUNDE (
-    KUNDEN_ID     INT AUTO_INCREMENT PRIMARY KEY, -- ID für FK-Referenz
-    NAME          VARCHAR(255),
+                                     KUNDEN_ID     INT AUTO_INCREMENT PRIMARY KEY, -- ID für FK-Referenz
+                                     NAME          VARCHAR(255),
     GEBURTSTAG    DATE,
     ADRESSE       VARCHAR(255),
     STADT         VARCHAR(100),
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS KUNDE (
     LAND          VARCHAR(100),
     EMAIL         VARCHAR(255) UNIQUE,
     TELEFONNUMMER VARCHAR(20)
-);
+    );
 ```
 
 ### Tabelle: BESTELLUNG
@@ -29,13 +29,13 @@ Die Tabelle speichert Bestellinformationen und ist über einen Foreign Key mit d
 
 ```sql
 CREATE TABLE IF NOT EXISTS BESTELLUNG (
-    BESTELLUNG_ID INT PRIMARY KEY,
-    BESTELLDATUM  DATE,
-    ARTIKEL_ID    INT,
-    FK_KUNDEN     INT NOT NULL,
-    UMSATZ        INT,
-    FOREIGN KEY (FK_KUNDEN) REFERENCES KUNDE (KUNDEN_ID)
-);
+                                          BESTELLUNG_ID INT PRIMARY KEY,
+                                          BESTELLDATUM  DATE,
+                                          ARTIKEL_ID    INT,
+                                          FK_KUNDEN     INT NOT NULL,
+                                          UMSATZ        INT,
+                                          FOREIGN KEY (FK_KUNDEN) REFERENCES KUNDE (KUNDEN_ID)
+    );
 ```
 
 ## Zielsetzung
@@ -54,14 +54,14 @@ Führe das folgende Script aus, um die Benchmarks mit den korrekten Pfaden und P
 1. Navigiere in das Verzeichnis `Tools`, wo sich das Script befindet.
 2. Führe das Script `sysbench_script.sh` aus und übergebe die erforderlichen Parameter.
 
-### Code - Beispiel:
+### Code für Join Type - Vergleich:
 
 ```bash
 cd ../..
 cd Tools
 ./sysbench_script.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Output \
-  "1,64" \
-  "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/int_queries:false" \
-  "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/varchar_queries:true"
+  -out "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Output" \
+  -len "1,64" \
+  -script:"YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/int_queries:false" \
+  -script:"YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/varchar_queries:true"
 ```
