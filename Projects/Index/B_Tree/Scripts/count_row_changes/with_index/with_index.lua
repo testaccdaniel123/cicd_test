@@ -21,7 +21,7 @@ function prepare()
 
     db_query(create_kunden_query)
     db_query(create_indices)
-    print("Table 'KUNDEN' and indices have been successfully created.")
+    print("Table 'KUNDEN' and indices test been successfully created.")
 end
 
 function cleanup()

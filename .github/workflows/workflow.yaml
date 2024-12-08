@@ -21,16 +21,69 @@ jobs:
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
       DB_NAME: ${{ secrets.DB_NAME }}
-      TIME: 18
-      THREADS: 4
+      TIME: 8
+      THREADS: 1
       EVENTS: 0
-      REPORT_INTERVAL: 2
+      REPORT_INTERVAL: 1
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      # Fetch changes
+      - name: Detect Changed Files
+        id: changes
+        run: |
+          # Get the number of commits on the branch
+          BRANCH_COMMIT_COUNT=$(git rev-list --count HEAD)
+          
+          if [ "$BRANCH_COMMIT_COUNT" -eq "1" ]; then
+          # If it's the first commit, compare with the latest from main
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          else
+          # Otherwise, compare with the previous commit
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          fi
+    
+          echo "Changed files: $CHANGED_FILES"
+
+          # Define the mapping for each test-type to the required file patterns
+          declare -A patterns
+          patterns=( 
+            ["high-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+            ["low-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+            ["b-tree-query-differences"]="./Projects/Index/B_Tree/Scripts/query_differences:false"
+            ["selectivity-change"]="./Projects/Index/Hash/Scripts/selectivity_changes:true"
+            ["hash-query-differences"]="./Projects/Index/Hash/Scripts/query_differences:false"
+            ["join-type"]="./Projects/Join_Typ/Scripts/int_queries:false ./Projects/Join_Typ/Scripts/varchar_queries:true"
+          )
+
+          # Dynamically check based on the test type and patterns
+          required_files="${patterns[${{ matrix.test-type }}]}"
+
+          # Check if required file changes are detected
+          detected=false
+          for pattern in $required_files; do
+            if echo "$CHANGED_FILES" | grep -q "$pattern"; then
+              echo "daniel detected"
+              detected=true
+            else
+              echo "daniel not detected"
+              detected=false
+              break
+            fi
+          done
+
+          # Set the environment variable accordingly
+          if [ "$detected" = true ]; then
+            echo "changes_detected=true" >> $GITHUB_ENV
+          else
+            echo "changes_detected=false" >> $GITHUB_ENV
+          fi
+
+          echo "Changes detected logic executed."
 
       - name: Cache pip dependencies
+        if: env.changes_detected == 'true'
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
@@ -39,6 +92,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
+        if: env.changes_detected == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y sysbench
@@ -46,17 +100,19 @@ jobs:
           pip install pandas matplotlib
 
       - name: Start MySQL container
+        if: env.changes_detected == 'true'
         run: |
           docker run --name mysql-${{ matrix.test-type }} -d \
             -e MYSQL_ROOT_PASSWORD=$DB_PASS \
             -e MYSQL_DATABASE=$DB_NAME \
             -p $DB_PORT:3306 mysql:8.0
-          
+
           echo "Waiting for MySQL..."
           until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
           echo "MySQL is ready!"
 
       - name: Run sysbench script
+        if: env.changes_detected == 'true'
         run: |
           chmod +x Tools/sysbench_script.sh
           if [ "${{ matrix.test-type }}" == "high-count" ]; then
@@ -93,12 +149,13 @@ jobs:
           fi
 
       - name: Stop MySQL container
+        if: env.changes_detected == 'true'
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
       - name: Upload output
-        if: always()
+        if: env.changes_detected == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: combined_output
