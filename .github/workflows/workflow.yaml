@@ -27,77 +27,55 @@ jobs:
       REPORT_INTERVAL: 1
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Fetch changes
+      - name: Fetch and Detect Changes
+        id: changes
+        run: |
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only HEAD..origin/main)
+          echo "Changed files: $CHANGED_FILES"
+          if echo "$CHANGED_FILES" | grep -qE 'Projects/.*|Tools/.*|.github/.*'; then
+            echo "Daniel detected"
+            echo "changes_detected=true" >> $GITHUB_ENV
+          else
+            echo "Daniel not detected"
+            echo "changes_detected=false" >> $GITHUB_ENV
+          fi
 
+      # Conditional caching and dependency install only when changes are detected
       - name: Cache pip dependencies
+        if: env.changes_detected == 'true'
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}"
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
+        if: env.changes_detected == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y sysbench
           python -m pip install --upgrade pip
           pip install pandas matplotlib
 
-      # Dynamically check for changed scripts
-      - name: Detect Changed Files
-        id: changes
+      # Dynamically initialize MySQL only when changes are detected
+      - name: Start MySQL container
+        if: env.changes_detected == 'true'
         run: |
-          git fetch origin main
-          CHANGED_FILES=$(git diff --name-only HEAD..origin/main)
-          echo "Changed files: $CHANGED_FILES"
-          echo "::set-output name=changed_files::$CHANGED_FILES"
+          docker run --name mysql-${{ matrix.test-type }} -d \
+            -e MYSQL_ROOT_PASSWORD=$DB_PASS \
+            -e MYSQL_DATABASE=$DB_NAME \
+            -p $DB_PORT:3306 mysql:8.0
+          
+          echo "Waiting for MySQL..."
+          until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
+          echo "MySQL is ready!"
 
-      - name: Map Changes to Scripts
-        id: map_scripts
-        run: |
-          CHANGED_FILES="${{ steps.changes.outputs.changed_files }}"
-          declare -A SCRIPTS_TO_RUN=()
-
-          # Map changes to their corresponding test types
-          if [[ "$CHANGED_FILES" =~ "Projects/Index/B_Tree/Scripts/count_row_changes/" ]]; then
-            SCRIPTS_TO_RUN["high-count"]=true
-            SCRIPTS_TO_RUN["low-count"]=true
-          fi
-
-          if [[ "$CHANGED_FILES" =~ "Projects/Index/Hash/Scripts/query_differences" ]]; then
-            SCRIPTS_TO_RUN["hash-query-differences"]=true
-          fi
-
-          if [[ "$CHANGED_FILES" =~ "Projects/Join_Typ/Scripts/" ]]; then
-            SCRIPTS_TO_RUN["join-type"]=true
-          fi
-
-          if [[ "$CHANGED_FILES" =~ "Projects/Index/Hash/Scripts/selectivity_changes" ]]; then
-            SCRIPTS_TO_RUN["selectivity-change"]=true
-          fi
-
-          # Map the matrix jobs based on the detected scripts
-          SCRIPTS=""
-          for key in "${!SCRIPTS_TO_RUN[@]}"; do
-            SCRIPTS+="$key,"
-          done
-
-          echo "Scripts to run based on changes: $SCRIPTS"
-          echo "::set-output name=scripts::$SCRIPTS"
-
-      - name: Check if the current matrix test should run
-        run: |
-          if [[ "${{ steps.map_scripts.outputs.scripts }}" == *"${{ matrix.test-type }}"* ]]; then
-            echo "Running script for ${{ matrix.test-type }}"
-          else
-            echo "Skipping script for ${{ matrix.test-type }}"
-            exit 0
-          fi
-
-      # Run the actual script
+      # Execute the relevant sysbench script
       - name: Run sysbench script
+        if: env.changes_detected == 'true'
         run: |
           chmod +x Tools/sysbench_script.sh
           if [ "${{ matrix.test-type }}" == "high-count" ]; then
@@ -106,40 +84,18 @@ jobs:
               -len "500,5000" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
-          elif [ "${{ matrix.test-type }}" == "low-count" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/B_Tree/low_counts" \
-              -len "10,50" \
-              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
-              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
-          elif [ "${{ matrix.test-type }}" == "b-tree-query-differences" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/B_Tree/query_differences" \
-              -script:"./Projects/Index/B_Tree/Scripts/query_differences:false"
-          elif [ "${{ matrix.test-type }}" == "selectivity-change" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/Hash/selectivity_changes" \
-              -len "10,100,500" \
-              -script:"./Projects/Index/Hash/Scripts/selectivity_changes:true"
-          elif [ "${{ matrix.test-type }}" == "hash-query-differences" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/Hash/query_differences" \
-              -script:"./Projects/Index/Hash/Scripts/query_differences:false"
-          elif [ "${{ matrix.test-type }}" == "join-type" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/Join_Typ" \
-              -len "1,64" \
-              -script:"./Projects/Join_Typ/Scripts/int_queries:false" \
-              -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"
           fi
 
+      # Stop MySQL container after tests
       - name: Stop MySQL container
+        if: env.changes_detected == 'true'
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
+      # Upload artifacts always
       - name: Upload output
-        if: always()
+        if: env.changes_detected == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: combined_output
