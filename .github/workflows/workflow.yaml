@@ -25,20 +25,10 @@ jobs:
       THREADS: 4
       EVENTS: 0
       REPORT_INTERVAL: 2
-      GCS_BUCKET: "your-gcs-bucket-name"  # Replace with your GCS bucket name
 
     steps:
-      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      # Authenticate to GCP using a service account
-      - name: Authenticate to Google Cloud Storage
-        run: |
-          echo "${{ secrets.GCS_SA_KEY }}" > gcp-key.json
-          gcloud auth activate-service-account --key-file=gcp-key.json
-          gcloud config set project your-project-id  # Replace with your GCP project ID
-          gsutil ls || exit 1
 
       # Map patterns for matrix values
       - name: Set directory patterns
@@ -61,19 +51,43 @@ jobs:
       - name: Calculate hash of directories
         id: calculate_hash
         run: |
-          # Generate hash from file contents
+          # Find all files recursively, sort by name, and calculate hash with file contents and paths
           HASH=$(find $patterns -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
           echo "Calculated hash: $HASH"
           echo "hash=$HASH" >> $GITHUB_ENV
 
+      # Restore cached output if it exists
+      - name: Restore cached output
+        id: restore_cache
+        uses: actions/cache@v3
+        with:
+          path: ./Output/${{ matrix.test-type }}
+          key: output-${{ matrix.test-type }}-${{ env.hash }}
+
+      # Determine whether to skip script execution based on cache existence
+      - name: Should run check
+        id: should_run
+        run: |
+          if [ -d "./Output/${{ matrix.test-type }}" ]; then
+            echo "Cache exists. Skipping script execution."
+            echo "should_run=false" >> $GITHUB_ENV
+          else
+            echo "No cache found. Will execute the script."
+            echo "should_run=true" >> $GITHUB_ENV
+          fi
+
+      # Install dependencies if needed
       - name: Install dependencies
+        if: env.should_run == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y sysbench
           python -m pip install --upgrade pip
           pip install pandas matplotlib
 
+      # Start MySQL container if running
       - name: Start MySQL container
+        if: env.should_run == 'true'
         run: |
           docker run --name mysql-${{ matrix.test-type }} -d \
             -e MYSQL_ROOT_PASSWORD=$DB_PASS \
@@ -84,26 +98,62 @@ jobs:
           until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
           echo "MySQL is ready!"
 
+      # Run the main script if changes were detected
       - name: Run sysbench script
+        if: env.should_run == 'true'
         run: |
           chmod +x Tools/sysbench_script.sh
-          Tools/sysbench_script.sh -out "./Output/${{ matrix.test-type }}" -len "10,100,500"
+          if [ "${{ matrix.test-type }}" == "high-count" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/${{ matrix.test-type }}" \
+              -len "500,5000" \
+              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
+              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+          elif [ "${{ matrix.test-type }}" == "low-count" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/${{ matrix.test-type }}" \
+              -len "10,50" \
+              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
+              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+          elif [ "${{ matrix.test-type }}" == "b-tree-query-differences" ]; then
+            Tools/sysbench_script.sh \
+            -out "./Output/${{ matrix.test-type }}" \
+            -script:"./Projects/Index/B_Tree/Scripts/query_differences:false"
+          elif [ "${{ matrix.test-type }}" == "selectivity-change" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/${{ matrix.test-type }}" \
+              -len "10,100,500" \
+              -script:"./Projects/Index/Hash/Scripts/selectivity_changes:true"         
+          elif [ "${{ matrix.test-type }}" == "hash-query-differences" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/${{ matrix.test-type }}" \
+              -script:"./Projects/Index/Hash/Scripts/query_differences:false"
+          elif [ "${{ matrix.test-type }}" == "join-type" ]; then
+            Tools/sysbench_script.sh \
+              -out "./Output/${{ matrix.test-type }}" \
+              -len "1,64" \
+              -script:"./Projects/Join_Typ/Scripts/int_queries:false" \
+              -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"          
+          fi
 
       # Stop MySQL container if changes were detected
       - name: Stop MySQL container
+        if: env.should_run == 'true'
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
-      # Save the output to GCS
-      - name: Save output to GCS
+      # Save output to cache if changes were detected
+      - name: Save output to cache
         if: env.should_run == 'true'
-        run: |
-          gsutil -m cp -r ./Output/${{ matrix.test-type }} gs://${GCS_BUCKET}/output-${{ matrix.test-type }}-${{ env.hash }}
+        uses: actions/cache@v3
+        with:
+          path: ./Output/${{ matrix.test-type }}
+          key: output-${{ matrix.test-type }}-${{ env.hash }}
 
-      # Upload all output artifacts to GCS
-      - name: Upload combined output
+      # Upload all (still use artifact for combined output)
+      - name: Upload all
         uses: actions/upload-artifact@v3
         with:
           name: combined-output
-          path: ./Output/
+          path: Output
