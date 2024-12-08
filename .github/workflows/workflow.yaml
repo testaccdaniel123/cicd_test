@@ -30,15 +30,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache pip dependencies
+      - name: Set directory patterns
+        id: set_patterns
+        run: |
+          declare -A patterns=( 
+            ["high-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index"
+            ["low-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index"
+            ["b-tree-query-differences"]="./Projects/Index/B_Tree/Scripts/query_differences"
+            ["selectivity-change"]="./Projects/Index/Hash/Scripts/selectivity_changes"
+            ["hash-query-differences"]="./Projects/Index/Hash/Scripts/query_differences"
+            ["join-type"]="./Projects/Join_Typ/Scripts/int_queries ./Projects/Join_Typ/Scripts/varchar_queries"
+          )
+          
+          # Convert patterns to a string based on matrix.test-type
+          PATTERN=${patterns[${{ matrix.test-type }}]}
+          echo "patterns=${PATTERN}" >> $GITHUB_ENV
+
+      - name: Calculate hash of directories
+        id: calculate_hash
+        run: |
+          HASH=$(find $patterns -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+          echo "Calculated hash: $HASH"
+          echo "hash=$HASH" >> $GITHUB_ENV
+
+      - name: Restore cached output
+        id: restore_cache
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          path: ./Output/${{ matrix.test-type }}
+          key: output-${{ matrix.test-type }}-${{ env.hash }}
+
+      - name: Should run check
+        run: echo "should_run=$( [ -d "./Output/${{ matrix.test-type }}" ] && echo false || echo true )" >> $GITHUB_ENV
 
       - name: Install dependencies
+        if: env.should_run == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y sysbench
@@ -46,6 +72,7 @@ jobs:
           pip install pandas matplotlib
 
       - name: Start MySQL container
+        if: env.should_run == 'true'
         run: |
           docker run --name mysql-${{ matrix.test-type }} -d \
             -e MYSQL_ROOT_PASSWORD=$DB_PASS \
@@ -57,49 +84,57 @@ jobs:
           echo "MySQL is ready!"
 
       - name: Run sysbench script
+        if: env.should_run == 'true'
         run: |
           chmod +x Tools/sysbench_script.sh
           if [ "${{ matrix.test-type }}" == "high-count" ]; then
             Tools/sysbench_script.sh \
-              -out "./Output/B_Tree/high_counts" \
+              -out "./Output/${{ matrix.test-type }}" \
               -len "500,5000" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
           elif [ "${{ matrix.test-type }}" == "low-count" ]; then
             Tools/sysbench_script.sh \
-              -out "./Output/B_Tree/low_counts" \
+              -out "./Output/${{ matrix.test-type }}" \
               -len "10,50" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
               -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
           elif [ "${{ matrix.test-type }}" == "b-tree-query-differences" ]; then
             Tools/sysbench_script.sh \
-            -out "./Output/B_Tree/query_differences" \
+            -out "./Output/${{ matrix.test-type }}" \
             -script:"./Projects/Index/B_Tree/Scripts/query_differences:false"
           elif [ "${{ matrix.test-type }}" == "selectivity-change" ]; then
             Tools/sysbench_script.sh \
-              -out "./Output/Hash/selectivity_changes" \
+              -out "./Output/${{ matrix.test-type }}" \
               -len "10,100,500" \
               -script:"./Projects/Index/Hash/Scripts/selectivity_changes:true"         
           elif [ "${{ matrix.test-type }}" == "hash-query-differences" ]; then
             Tools/sysbench_script.sh \
-              -out "./Output/Hash/query_differences" \
+              -out "./Output/${{ matrix.test-type }}" \
               -script:"./Projects/Index/Hash/Scripts/query_differences:false"
           elif [ "${{ matrix.test-type }}" == "join-type" ]; then
             Tools/sysbench_script.sh \
-              -out "./Output/Join_Typ" \
+              -out "./Output/${{ matrix.test-type }}" \
               -len "1,64" \
               -script:"./Projects/Join_Typ/Scripts/int_queries:false" \
               -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"          
           fi
 
       - name: Stop MySQL container
+        if: env.should_run == 'true'
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
-      - name: Upload output
-        if: always()
+      - name: Save output to cache
+        if: env.should_run == 'true'
+        uses: actions/cache@v3
+        with:
+          path: ./Output/${{ matrix.test-type }}
+          key: output-${{ matrix.test-type }}-${{ env.hash }}
+
+      - name: Upload all
         uses: actions/upload-artifact@v3
         with:
-          name: combined_output
+          name: combined-output
           path: Output
