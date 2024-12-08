@@ -25,18 +25,46 @@ jobs:
       THREADS: 4
       EVENTS: 0
       REPORT_INTERVAL: 2
+      GCS_BUCKET: "your-gcs-bucket-name"  # Replace with your GCS bucket name
 
     steps:
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      # Authenticate to GCP using a service account
+      - name: Authenticate to Google Cloud Storage
+        run: |
+          echo "${{ secrets.GCS_SA_KEY }}" > gcp-key.json
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project your-project-id  # Replace with your GCP project ID
+          gsutil ls || exit 1
+
+      # Map patterns for matrix values
+      - name: Set directory patterns
+        id: set_patterns
+        run: |
+          declare -A patterns=( 
+            ["high-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index"
+            ["low-count"]="./Projects/Index/B_Tree/Scripts/count_row_changes/with_index ./Projects/Index/B_Tree/Scripts/count_row_changes/without_index"
+            ["b-tree-query-differences"]="./Projects/Index/B_Tree/Scripts/query_differences"
+            ["selectivity-change"]="./Projects/Index/Hash/Scripts/selectivity_changes"
+            ["hash-query-differences"]="./Projects/Index/Hash/Scripts/query_differences"
+            ["join-type"]="./Projects/Join_Typ/Scripts/int_queries ./Projects/Join_Typ/Scripts/varchar_queries"
+          )
+          
+          # Convert patterns to a string based on matrix.test-type
+          PATTERN=${patterns[${{ matrix.test-type }}]}
+          echo "patterns=${PATTERN}" >> $GITHUB_ENV
+
+      # Calculate hash for the directories specified by the patterns
+      - name: Calculate hash of directories
+        id: calculate_hash
+        run: |
+          # Generate hash from file contents
+          HASH=$(find $patterns -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+          echo "Calculated hash: $HASH"
+          echo "hash=$HASH" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -59,47 +87,23 @@ jobs:
       - name: Run sysbench script
         run: |
           chmod +x Tools/sysbench_script.sh
-          if [ "${{ matrix.test-type }}" == "high-count" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/B_Tree/high_counts" \
-              -len "500,5000" \
-              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
-              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
-          elif [ "${{ matrix.test-type }}" == "low-count" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/B_Tree/low_counts" \
-              -len "10,50" \
-              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
-              -script:"./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
-          elif [ "${{ matrix.test-type }}" == "b-tree-query-differences" ]; then
-            Tools/sysbench_script.sh \
-            -out "./Output/B_Tree/query_differences" \
-            -script:"./Projects/Index/B_Tree/Scripts/query_differences:false"
-          elif [ "${{ matrix.test-type }}" == "selectivity-change" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/Hash/selectivity_changes" \
-              -len "10,100,500" \
-              -script:"./Projects/Index/Hash/Scripts/selectivity_changes:true"         
-          elif [ "${{ matrix.test-type }}" == "hash-query-differences" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/Hash/query_differences" \
-              -script:"./Projects/Index/Hash/Scripts/query_differences:false"
-          elif [ "${{ matrix.test-type }}" == "join-type" ]; then
-            Tools/sysbench_script.sh \
-              -out "./Output/Join_Typ" \
-              -len "1,64" \
-              -script:"./Projects/Join_Typ/Scripts/int_queries:false" \
-              -script:"./Projects/Join_Typ/Scripts/varchar_queries:true"          
-          fi
+          Tools/sysbench_script.sh -out "./Output/${{ matrix.test-type }}" -len "10,100,500"
 
+      # Stop MySQL container if changes were detected
       - name: Stop MySQL container
         run: |
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
-      - name: Upload output
-        if: always()
+      # Save the output to GCS
+      - name: Save output to GCS
+        if: env.should_run == 'true'
+        run: |
+          gsutil -m cp -r ./Output/${{ matrix.test-type }} gs://${GCS_BUCKET}/output-${{ matrix.test-type }}-${{ env.hash }}
+
+      # Upload all output artifacts to GCS
+      - name: Upload combined output
         uses: actions/upload-artifact@v3
         with:
-          name: combined_output
-          path: Output
+          name: combined-output
+          path: ./Output/
