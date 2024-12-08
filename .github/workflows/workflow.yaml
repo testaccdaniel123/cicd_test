@@ -24,8 +24,7 @@ jobs:
       - name: Detect Changed Files
         id: changes
         run: |
-          git fetch origin main --depth=1
-          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+          CHANGED_FILES=$(git diff --name-only HEAD)
           echo "Changed files: $CHANGED_FILES"
           echo "::set-output name=changed_files::$CHANGED_FILES"
 
