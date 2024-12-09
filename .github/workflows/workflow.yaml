@@ -108,20 +108,18 @@ jobs:
 
       - name: Commit outputs to saved_outputs branch
         if: env.should_run == 'true'
-        run: |
-          
-          git config --global user.email "${{ github.actor }}@gmail.com"
+        run: |          
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git config --global user.name "${{ github.actor }}"
           
-          git checkout -B saved_outputs
-
+          git checkout -B saved_outputs      
           mkdir -p output-${{ matrix.test-type }}-${{ env.hash }}
           cp -r ./Output/${{ matrix.test-type }} ./output-${{ matrix.test-type }}-${{ env.hash }}
 
-          # Commit changes
           git add ./output-${{ matrix.test-type }}-${{ env.hash }}
           git commit -m "Add output-${{ matrix.test-type }}-${{ env.hash }}"
-          git push origin saved_outputs
+
+          git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/testaccdaniel123/cicd_test.git saved_outputs
       - name: Upload all
         uses: actions/upload-artifact@v3
         with:
