@@ -58,30 +58,29 @@ jobs:
           # Fetch the latest changes from the saved_outputs branch
           git fetch origin saved_outputs
 
-          # List all the directories in saved_outputs
+          # List directories in saved_outputs
           echo "Directories in saved_outputs:"
-          git ls-tree -r --name-only origin/saved_outputs
+          git ls-tree -r --name-only origin/saved_outputs || true
 
           # Construct the expected directory path
           OUTPUT_DIR="output-${{ matrix.test-type }}-${{ env.hash }}"
 
-          # Check if the directory exists in the saved_outputs branch
-          if git ls-tree -d origin/saved_outputs "$OUTPUT_DIR"; then
+          # Check if the directory exists
+          if git ls-tree -d origin/saved_outputs "$OUTPUT_DIR" > /dev/null 2>&1; then
             echo "Outputs already exist. Moving contents to local Output/"
             mkdir -p Output/${{ matrix.test-type }}
 
-            # Checkout the specific directory's contents from the branch
-            git checkout origin/saved_outputs -- "$OUTPUT_DIR"
-
-            # Copy contents to the local Output directory
+            # Attempt to checkout only the necessary directory
+            git checkout origin/saved_outputs -- "$OUTPUT_DIR" || true
             cp -r "$OUTPUT_DIR/." Output/${{ matrix.test-type }}
 
-            # Indicate that we don't need to run the benchmarks
+            # Indicate that benchmarks should **NOT** run
             echo "should_run=false" >> $GITHUB_ENV
           else
+            echo "No outputs exist in saved_outputs. Running benchmarks."
             echo "should_run=true" >> $GITHUB_ENV
-          fi
-    
+          fi  
+      
 
       - name: Install dependencies
         if: env.should_run == 'true'
