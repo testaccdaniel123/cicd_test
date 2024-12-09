@@ -52,42 +52,23 @@ jobs:
           echo "Calculated hash: $HASH"
           echo "hash=$HASH" >> $GITHUB_ENV
 
-      - name: Debug branch structure and check existence
+      - name: Check existence and handle outputs
         id: check_existing
         run: |
           # Fetch the latest changes from the saved_outputs branch
           git fetch origin saved_outputs
-
-          # List all files and directories in the saved_outputs branch and save the output
-          OUTPUT_LIST=$(git ls-tree -r --name-only origin/saved_outputs)
-
-          # Debugging: Log fetched items
-          echo "Directories and files in origin/saved_outputs:"
-          echo "$OUTPUT_LIST"
-
-          # Set the expected directory path
+          
+          # Set expected directory path
           OUTPUT_DIR="output-${{ matrix.test-type }}-${{ env.hash }}"
-
-          # Debugging: Log the expected directory
-          echo "Expected directory: $OUTPUT_DIR"
-
-          # Check if the expected directory exists in the fetched list
-          if echo "$OUTPUT_LIST" | grep -q "^$OUTPUT_DIR"; then
-            echo "Outputs exist remotely. Attempting to copy."
+          
+          # Check if expected directory exists and copy if it does
+          if git ls-tree -r --name-only origin/saved_outputs | grep -q "^$OUTPUT_DIR"; then
             mkdir -p Output/${{ matrix.test-type }}
-
-            # Checkout the specific directory
-            if git checkout origin/saved_outputs -- "$OUTPUT_DIR"; then
-              cp -r "$OUTPUT_DIR/." Output/${{ matrix.test-type }}
-              echo "should_run=false" >> $GITHUB_ENV
-            else
-              echo "Error during git checkout of expected directory."
-              echo "should_run=true" >> $GITHUB_ENV
-            fi
+            git checkout origin/saved_outputs -- "$OUTPUT_DIR" && cp -r "$OUTPUT_DIR/." Output/${{ matrix.test-type }}
+            echo "should_run=false" >> $GITHUB_ENV
           else
-            echo "Directory does not exist. Running benchmarks."
             echo "should_run=true" >> $GITHUB_ENV
-          fi    
+          fi      
 
       - name: Install dependencies
         if: env.should_run == 'true'
@@ -127,10 +108,7 @@ jobs:
 
       - name: Commit outputs to saved_outputs branch
         if: env.should_run == 'true'
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@users.noreply.github.com"
-          
+        run: |                    
           # Switch or create saved_outputs branch
           git checkout -B saved_outputs
 
