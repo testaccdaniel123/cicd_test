@@ -55,6 +55,7 @@ jobs:
       - name: Check if outputs already exist in branch
         run: |
           git fetch origin saved_outputs
+          git ls-tree -r --name-only origin/saved_outputs
           if git ls-tree -d origin/saved_outputs "output-${{ matrix.test-type }}-${{ env.hash }}"; then
             echo "Outputs already exist. Moving contents to local Output/"
             mkdir -p Output/${{ matrix.test-type }}
