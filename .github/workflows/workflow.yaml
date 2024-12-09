@@ -4,8 +4,9 @@ on:
   push:
     paths:
       - 'Projects/**'
-      - 'Tools/**'
       - '.github/**'
+      - 'Tools/Python'
+      - 'Tools/sysbench_script.sh'
   workflow_dispatch:
 
 jobs:
@@ -25,6 +26,7 @@ jobs:
       THREADS: 4
       EVENTS: 0
       REPORT_INTERVAL: 2
+      GENERAL_PATHS: "./.github ./Tools/Python ./Tools/sysbench_script.sh"
 
     steps:
       - name: Checkout repository
@@ -51,12 +53,17 @@ jobs:
           HASH=$(find $patterns -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
           echo "Calculated hash: $HASH"
           echo "hash=$HASH" >> $GITHUB_ENV
+        
+          LAST_COMMIT=$(git rev-parse HEAD || git rev-parse origin/main)          
+          GENERAL_HASH=$(git ls-tree -r $LAST_COMMIT -- $GENERAL_PATHS | awk '{print $3}' | xargs -I {} git show {} | sha256sum | awk '{print $1}')
+          echo "Calculated general paths hash: $GENERAL_HASH"
+          echo "general_hash=$GENERAL_HASH" >> $GITHUB_ENV
 
       - name: Check existence and handle outputs
         id: check_existing
         run: |
           git fetch origin saved_outputs      
-          OUTPUT_DIR="${{ matrix.test-type }}-${{ env.hash }}"
+          OUTPUT_DIR="${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}"
           
           if git ls-tree -r --name-only origin/saved_outputs | grep -q "^$OUTPUT_DIR"; then
             mkdir -p Output/
@@ -143,14 +150,14 @@ jobs:
           git config --global user.name "github-actions[bot]"
 
           git checkout saved_outputs
-          git pull
+          git pull origin saved_outputs
 
-          mkdir -p ${{ matrix.test-type }}-${{ env.hash }}
-          cp -r ./Output/${{ matrix.test-type }} ./${{ matrix.test-type }}-${{ env.hash }}
+          mkdir -p ${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}
+          cp -r ./Output/${{ matrix.test-type }} ./${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}
 
-          git add ./${{ matrix.test-type }}-${{ env.hash }}
-          git commit -m "Add ${{ matrix.test-type }}-${{ env.hash }}"
-          git push
+          git add ./${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}
+          git commit -m "Add ${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}"
+          git push origin saved_outputs
       - name: Upload all
         uses: actions/upload-artifact@v3
         with:
