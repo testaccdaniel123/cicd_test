@@ -108,11 +108,13 @@ jobs:
 
       - name: Commit outputs to saved_outputs branch
         if: env.should_run == 'true'
-        run: |                    
-          # Switch or create saved_outputs branch
+        run: |
+          
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          
           git checkout -B saved_outputs
 
-          # Save the test results
           mkdir -p output-${{ matrix.test-type }}-${{ env.hash }}
           cp -r ./Output/${{ matrix.test-type }} ./output-${{ matrix.test-type }}-${{ env.hash }}
 
