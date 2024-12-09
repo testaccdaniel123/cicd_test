@@ -1,0 +1,3 @@
+Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum
+int_queries_insert,0,22000,66016,88016,4,88016,0,0,38.6789s,4,38677.94,38677.95,38677.97,38506.38,154711.80
+int_queries_select,2588,0,0,2588,2588,2588,0,0,18.0193s,2588,24.16,27.84,48.18,28.16,72041.30
