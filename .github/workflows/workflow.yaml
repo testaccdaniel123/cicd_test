@@ -111,14 +111,19 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-                    
+
           git checkout -B saved_outputs
-          
+
           mkdir -p output-${{ matrix.test-type }}-${{ env.hash }}
           cp -r ./Output/${{ matrix.test-type }} ./output-${{ matrix.test-type }}-${{ env.hash }}
-          
+
           git add ./output-${{ matrix.test-type }}-${{ env.hash }}
           git commit -m "Add output-${{ matrix.test-type }}-${{ env.hash }}"
+
+          # Pull changes from the remote before pushing
+          git pull origin saved_outputs --rebase
+
+          # Now push the changes
           git push origin saved_outputs
       - name: Upload all
         uses: actions/upload-artifact@v3
