@@ -1,0 +1,7 @@
+Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum
+int_queries_insert,0,22000,66016,88016,4,88016,0,0,22.7135s,4,22712.49,22712.51,22712.54,22842.77,90850.02
+int_queries_select,1412,0,0,1412,1412,1412,0,0,18.0304s,1412,43.40,51.06,116.37,55.82,72103.74
+varchar_queries_1_insert,0,22000,66016,88016,4,88016,0,0,26.4099s,4,26408.69,26408.87,26409.39,26382.13,105635.50
+varchar_queries_1_select,2234,0,0,2234,2234,2234,0,0,18.0269s,2234,27.29,32.26,80.55,33.12,72061.94
+varchar_queries_64_insert,0,22000,66016,88016,4,88016,0,0,26.1763s,4,26175.23,26175.25,26175.28,26382.13,104701.00
+varchar_queries_64_select,1888,0,0,1888,1888,1888,0,0,18.0285s,1888,32.80,38.18,56.92,38.94,72084.19
