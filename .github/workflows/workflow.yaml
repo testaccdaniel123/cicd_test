@@ -42,7 +42,6 @@ jobs:
             ["join-type"]="./Projects/Join_Typ/Scripts/int_queries ./Projects/Join_Typ/Scripts/varchar_queries"
           )
           
-          # Convert patterns to a string based on matrix.test-type
           PATTERN=${patterns[${{ matrix.test-type }}]}
           echo "patterns=${PATTERN}" >> $GITHUB_ENV
 
@@ -53,15 +52,26 @@ jobs:
           echo "Calculated hash: $HASH"
           echo "hash=$HASH" >> $GITHUB_ENV
 
-      - name: Restore cached output
-        id: restore_cache
+      - name: Check existence and handle outputs
+        id: check_existing
+        run: |
+          git fetch origin saved_outputs      
+          OUTPUT_DIR="${{ matrix.test-type }}-${{ env.hash }}"
+          
+          if git ls-tree -r --name-only origin/saved_outputs | grep -q "^$OUTPUT_DIR"; then
+            mkdir -p Output/
+            git checkout origin/saved_outputs -- "$OUTPUT_DIR" && cp -r "$OUTPUT_DIR/." Output/
+            echo "should_run=false" >> $GITHUB_ENV
+          else
+            echo "should_run=true" >> $GITHUB_ENV
+          fi
+
+      - name: Cache pip dependencies
+        if: env.should_run == 'true'
         uses: actions/cache@v3
         with:
-          path: ./Output/${{ matrix.test-type }}
-          key: output-${{ matrix.test-type }}-${{ env.hash }}
-
-      - name: Should run check
-        run: echo "should_run=$( [ -d "./Output/${{ matrix.test-type }}" ] && echo false || echo true )" >> $GITHUB_ENV
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
       - name: Install dependencies
         if: env.should_run == 'true'
@@ -126,13 +136,21 @@ jobs:
           docker stop mysql-${{ matrix.test-type }}
           docker rm mysql-${{ matrix.test-type }}
 
-      - name: Save output to cache
+      - name: Commit outputs to saved_outputs branch
         if: env.should_run == 'true'
-        uses: actions/cache@v3
-        with:
-          path: ./Output/${{ matrix.test-type }}
-          key: output-${{ matrix.test-type }}-${{ env.hash }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
+          git checkout saved_outputs
+          git pull
+
+          mkdir -p ${{ matrix.test-type }}-${{ env.hash }}
+          cp -r ./Output/${{ matrix.test-type }} ./${{ matrix.test-type }}-${{ env.hash }}
+
+          git add ./${{ matrix.test-type }}-${{ env.hash }}
+          git commit -m "Add ${{ matrix.test-type }}-${{ env.hash }}"
+          git push
       - name: Upload all
         uses: actions/upload-artifact@v3
         with:
