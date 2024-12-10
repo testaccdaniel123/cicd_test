@@ -1,0 +1,6 @@
+Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum
+query_differences_insert,0,24009,72087,96096,32,96096,0,0,20.0738s,32,2428.07,2509.10,2569.59,2585.31,80291.33
+query_differences_select_combined_match_with_range,60065,0,0,60065,60065,60065,0,0,18.0020s,60065,0.62,1.20,20.69,1.47,71924.15
+query_differences_select_full_match,210619,0,0,210619,210619,210619,0,0,18.0011s,210619,0.18,0.34,16.84,0.48,71765.05
+query_differences_select_leftmost_prefix,52455,0,0,52455,52455,52455,0,0,18.0017s,52455,0.68,1.37,17.45,1.79,71927.02
+query_differences_select_partial_match_range_query,57988,0,0,57988,57988,57988,0,0,18.0017s,57988,0.64,1.24,19.60,1.52,71921.75

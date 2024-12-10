@@ -1,0 +1,47 @@
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 4
+Report intermediate results every 2 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 2s ] thds: 4 tps: 2342.55 qps: 2342.55 (r/w/o: 2342.55/0.00/0.00) lat (ms,95%): 2.30 err/s: 0.00 reconn/s: 0.00
+[ 4s ] thds: 4 tps: 2355.80 qps: 2355.80 (r/w/o: 2355.80/0.00/0.00) lat (ms,95%): 2.30 err/s: 0.00 reconn/s: 0.00
+[ 6s ] thds: 4 tps: 2352.00 qps: 2352.00 (r/w/o: 2352.00/0.00/0.00) lat (ms,95%): 2.26 err/s: 0.00 reconn/s: 0.00
+[ 8s ] thds: 4 tps: 2350.49 qps: 2350.49 (r/w/o: 2350.49/0.00/0.00) lat (ms,95%): 2.35 err/s: 0.00 reconn/s: 0.00
+[ 10s ] thds: 4 tps: 2353.51 qps: 2353.51 (r/w/o: 2353.51/0.00/0.00) lat (ms,95%): 2.26 err/s: 0.00 reconn/s: 0.00
+[ 12s ] thds: 4 tps: 2355.99 qps: 2355.99 (r/w/o: 2355.99/0.00/0.00) lat (ms,95%): 2.26 err/s: 0.00 reconn/s: 0.00
+[ 14s ] thds: 4 tps: 2353.51 qps: 2353.51 (r/w/o: 2353.51/0.00/0.00) lat (ms,95%): 2.22 err/s: 0.00 reconn/s: 0.00
+[ 16s ] thds: 4 tps: 2344.02 qps: 2344.02 (r/w/o: 2344.02/0.00/0.00) lat (ms,95%): 2.30 err/s: 0.00 reconn/s: 0.00
+[ 18s ] thds: 4 tps: 2359.99 qps: 2359.99 (r/w/o: 2359.99/0.00/0.00) lat (ms,95%): 2.26 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            42341
+        write:                           0
+        other:                           0
+        total:                           42341
+    transactions:                        42341  (2351.96 per sec.)
+    queries:                             42341  (2351.96 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          18.0021s
+    total number of events:              42341
+
+Latency (ms):
+         min:                                    0.74
+         avg:                                    1.70
+         max:                                   19.13
+         95th percentile:                        2.26
+         sum:                                71946.53
+
+Threads fairness:
+    events (avg/stddev):           10585.2500/104.43
+    execution time (avg/stddev):   17.9866/0.00
+
