@@ -31,7 +31,7 @@ for base_script in insert_rows['Base_Script'].unique():
                 **{m: merged[f'{m}_insert'] + merged[f'{m}_select'] for m in metrics}
             )
 
-        match = re.match(r'^(?:(?:[a-zA-Z]*_)?(\d+)_select_)?(.*?)(?:_select)?$', select_script)
+        match = re.match(r'^(?:(?:[a-zA-Z]*_)*?(\d+)_select_)?(.*?)(?:_select)?$', select_script)
         if match:
             group1 = match.group(1)
             group2 = match.group(2)
