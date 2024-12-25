@@ -34,7 +34,7 @@ while [[ $# -gt 0 ]]; do
         -out) OUTPUT_DIR="$2"; shift 2 ;;
         -len) CUSTOM_LENGTHS="$2"; shift 2 ;;
         -scripts:*)
-            QUERY_INFO+=("${1#-scripts:}")  # Strip the `-scripts:` prefix
+            QUERY_INFO+=("${1#-scripts:}")
             shift
             while [[ $# -gt 0 && "$1" != -* ]]; do
                 QUERY_INFO+=("$1")
@@ -44,8 +44,6 @@ while [[ $# -gt 0 ]]; do
         *) usage ;;
     esac
 done
-
-echo "DANIEL QUERY_INFO: ${QUERY_INFO[@]}"
 
 # Validate required arguments
 if [ -z "$OUTPUT_DIR" ] || [ "${#QUERY_INFO[@]}" -eq 0 ]; then
@@ -243,7 +241,7 @@ for INFO in "${QUERY_INFO[@]}"; do
 
       process_script_benchmark "$QUERY_PATH" "$LOG_DIR_LENGTH" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$LENGTH"
 
-      RAW_RESULTS_FILE="${LOG_DIR_LENGTH}/length_${LENGTH}_cleanup.log"
+      RAW_RESULTS_FILE="${LOG_DIR_LENGTH}/$(basename "$QUERY_PATH")_${LENGTH}_cleanup.log"
       run_benchmark "$MAIN_SCRIPT" "cleanup" "$RAW_RESULTS_FILE"
     done
   else

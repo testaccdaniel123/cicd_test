@@ -1,4 +1,4 @@
-# Performance - Analyse für B - Tree - Index
+# Performance - Analyse für B - Tree - Index  
 
 ## Beschreibung
 
@@ -6,7 +6,7 @@ Es wird die **Performance vom B-Tree-Index** (Default Index in MySQL) analysiert
 
 ## Datenbankstruktur
 
-Das Projekt verwendet die gleiche Tabelle **KUNDE**, wie auch für den Integer-Fall in Join_Typ.
+Das Projekt verwendet die gleiche Tabelle **KUNDE**, wie auch für den Integer-Fall in Join_Typ. 
 
 ## Zielsetzung
 Untersucht werden:
@@ -14,7 +14,7 @@ Untersucht werden:
 - Veranschaulichung der Performanceunterschiede, **je nach Sortierung** des Index usw.
   - Index sollte funktionieren für: [column_prefix.lua](Scripts/query_differences/query_differences_select/column_prefix.lua), [combined_match_with_range.lua](Scripts/query_differences/query_differences_select/combined_match_with_range.lua), [exact_with_prefix.lua](Scripts/query_differences/query_differences_select/exact_with_prefix.lua), [full_match.lua](Scripts/query_differences/query_differences_select/full_match.lua),[leftmost_prefix.lua](Scripts/query_differences/query_differences_select/leftmost_prefix.lua), [range_values.lua](Scripts/query_differences/query_differences_select/range_values.lua)
   - Nicht funktionieren für: [not_leftmost.lua](Scripts/query_differences/query_differences_select/not_leftmost.lua), [range_with_like.lua](Scripts/query_differences/query_differences_select/range_with_like.lua), [skip_columns.lua](Scripts/query_differences/query_differences_select/skip_columns.lua)
-
+    
 ### Code für High Count Vergleich:
 
 ```bash
@@ -22,7 +22,7 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/count_row_changes/high_counts" \
-  -len "5000,50000" \
+  -len "500,5000" \
   -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
   "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
 ```
@@ -34,7 +34,8 @@ cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/count_row_changes/low_counts" \
   -len "10,50" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true"  
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
+  "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"  
 ```
 
 ### Code unterschiedliche Select - Queries
