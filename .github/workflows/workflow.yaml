@@ -121,14 +121,13 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git checkout -B saved_outputs origin/saved_outputs
-          git pull --rebase origin saved_outputs || (git rebase --abort && git pull --rebase origin saved_outputs)
-          
+          git checkout saved_outputs
+          git pull --rebase origin saved_outputs
           mkdir -p ${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}
           cp -r ./Output/${{env.extracted_word}}/${{ matrix.test-type }} ./${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}
           git add ./${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}
-          git commit -m "Add ${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}" || echo "No changes to commit"
-          git push origin saved_outputs || (git pull --rebase origin saved_outputs && git push origin saved_outputs)
+          git commit -m "Add ${{ matrix.test-type }}-${{ env.hash }}-${{ env.general_hash }}"
+          git push origin saved_outputs
 
       - name: Upload all
         uses: actions/upload-artifact@v3

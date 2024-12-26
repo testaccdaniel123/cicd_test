@@ -31,6 +31,10 @@ for base_script in insert_rows['Base_Script'].unique():
                 **{m: merged[f'{m}_insert'] + merged[f'{m}_select'] for m in metrics}
             )
 
+        # 1) no multiple selects and no multiple lens => ex.: int_queries_select => int_queries
+        # 2) multiple selects but no multiple lens => ex.: query_differences_select_column_prefix => column_prefix
+        # 3) multiple lens but no multiple selects => ex.: with_index_500_select => with_index_500
+        # 4) multiple selects and multiple lens => ex.: null_2_select_default_null_count_null => default_null_count_null_2
         match = re.match(r'^(?:(?:[a-zA-Z]*_)*?(\d+)_select_)?(.*?)(?:_select)?$', select_script)
         if match:
             group1 = match.group(1)
