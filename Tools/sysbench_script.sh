@@ -250,7 +250,7 @@ for INFO in "${QUERY_INFO[@]}"; do
     RAW_RESULTS_FILE="$LOG_DIR/$(basename "$QUERY_PATH")_prepare.log"
     run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE"
 
-    process_script_benchmark "$QUERY_PATH" "$LOG_DIR" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$LENGTH"
+    process_script_benchmark "$QUERY_PATH" "$LOG_DIR" "$INSERT_SCRIPT" "$SELECT_SCRIPT"
 
     # Cleanup phase
     RAW_RESULTS_FILE="$LOG_DIR/$(basename "$QUERY_PATH")_cleanup.log"
