@@ -37,7 +37,7 @@ jobs:
           CONFIG_FILE=".github/pattern.json"
           TEST_TYPE="${{ matrix.test-type }}"
           DIRS=$(jq -r --arg test "$TEST_TYPE" '.[$test].dirs[]' "$CONFIG_FILE" | sed 's/:.*$//' | paste -sd " ")                  
-          DIRS_STRING=$(jq -r --arg test "$TEST_TYPE" '.[$test].dirs[]' "$CONFIG_FILE" | sed 's/$/\"/;s/^/\"/g' | paste -sd " \" ")
+          DIRS_STRING=$(jq -r --arg test "$TEST_TYPE" '.[$test].dirs[]' "$CONFIG_FILE" | paste -sd " ")
           LEN=$(jq -r --arg test "$TEST_TYPE" '.[$test].len' "$CONFIG_FILE")
           
           if [[ $(jq -r --arg test "$TEST_TYPE" '.[$test].dirs[0]' "$CONFIG_FILE") =~ /Projects\/(.*)\/Scripts/ ]]; then
@@ -105,10 +105,11 @@ jobs:
         if: env.should_run == 'true'
         run: |
           chmod +x Tools/sysbench_script.sh
+
           Tools/sysbench_script.sh \
             -out ${{ env.output_dir }} \
             -len ${{ env.len }} \
-            -scripts:${{ env.dirs_string }}
+            -scripts:$(echo "${{ env.dirs_string }}" | sed 's/ / /g')
 
       - name: Stop MySQL container
         if: env.should_run == 'true'
