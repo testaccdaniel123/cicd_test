@@ -1,0 +1,7 @@
+Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum
+int_column_insert,0,10001,5,10006,2,10006,0,0,9.1181s,2,4492.83,4558.80,4624.76,4599.99,9117.59
+int_column_select_int_desc_sort,1744,0,0,1744,1744,1744,0,0,8.0017s,1744,3.81,4.59,12.99,5.09,7999.14
+int_column_select_int_simple_filter,40141,0,0,40141,40141,40141,0,0,8.0007s,40141,0.17,0.20,7.56,0.22,7965.05
+char_column_insert,0,12002,7,12009,3,12009,0,0,11.7167s,3,3879.83,3905.38,3941.84,3911.79,11716.15
+char_column_select_char_desc_sort,2103,0,0,2103,2103,2103,0,0,8.0022s,2103,3.11,3.80,11.69,4.18,7999.02
+char_column_select_char_simple_filter,40174,0,0,40174,40174,40174,0,0,8.0007s,40174,0.18,0.20,7.70,0.23,7966.44
