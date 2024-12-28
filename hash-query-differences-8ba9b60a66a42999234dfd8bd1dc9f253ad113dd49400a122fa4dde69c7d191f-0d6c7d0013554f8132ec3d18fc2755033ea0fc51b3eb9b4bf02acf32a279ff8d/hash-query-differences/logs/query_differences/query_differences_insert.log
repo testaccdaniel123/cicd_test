@@ -1,0 +1,19 @@
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 1
+Report intermediate results every 1 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 1s ] thds: 1 tps: 0.00 qps: 1582.57 (r/w/o: 0.00/1579.58/3.00) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 2s ] thds: 1 tps: 0.00 qps: 1499.58 (r/w/o: 0.00/1499.58/0.00) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+FATAL: mysql_drv_query() returned error 1114 (The table 'KUNDEN' is full) for query '            INSERT IGNORE INTO KUNDEN
+            (KUNDEN_ID, NAME, VORNAME, GEBURTSTAG, ADRESSE, STADT, POSTLEITZAHL, LAND, EMAIL, TELEFONNUMMER)
+            VALUES (3277, 'Koch', 'Sophia', '1990-07-26', 'Address_3277', 'City_23', '46550', 'Germany', 'customer3277@example.com', '+491576623346');
+        '
+FATAL: `thread_run' function failed: ...h/Scripts/query_differences/query_differences_insert.lua:38: db_query() failed
