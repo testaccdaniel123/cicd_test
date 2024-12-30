@@ -21,10 +21,10 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Smaller" \
-  -len "10,255" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/char:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/int:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/varchar:true"
+  -var '{"length":[10,255]}' \
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/char:length" \
+  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/int:length" \
+  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/varchar:length"
 ```
 
 ### Nur Graphen erstellen für Data Type Größenvergleich (log und csv- files müssen schon bestehen)
@@ -38,7 +38,6 @@ cd Tools
   "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/int:true" \
   "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/varchar:true"
 ```
-
 
 #### Notes
 Allgemein gilt bei Datentypen, dass kleiner besser ist, weshalb man den kleinstmöglichen Datentypen wählen sollte, den man speichern kann und der die vorhandenen Daten entsprechend repräsentieren kann.
