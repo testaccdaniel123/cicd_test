@@ -1,5 +1,3 @@
-Ausschnitt von einer Demo im Terminal, um Gnuplot besser kennen zu lernen
-
 ➜  ~ gnuplot
 
 	G N U P L O T
