@@ -1,0 +1,63 @@
+{
+  "high-count": {
+    "dirs": [
+      "./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true",
+      "./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+    ],
+    "len": "400,4000"
+  },
+  "low-count": {
+    "dirs": [
+      "./Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true",
+      "./Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+    ],
+    "len": "10,40"
+  },
+  "b-tree-query-differences": {
+    "dirs": [
+      "./Projects/Index/B_Tree/Scripts/query_differences:false"
+    ],
+    "len": ""
+  },
+  "selectivity-change": {
+    "dirs": [
+      "./Projects/Index/Hash/Scripts/selectivity_changes:true"
+    ],
+    "len": "10,100,500"
+  },
+  "hash-query-differences": {
+    "dirs": [
+      "./Projects/Index/Hash/Scripts/query_differences:false"
+    ],
+    "len": ""
+  },
+  "join-type": {
+    "dirs": [
+      "./Projects/Join_Typ/Scripts/int_queries:false",
+      "./Projects/Join_Typ/Scripts/varchar_queries:true"
+    ],
+    "len": "1,64"
+  },
+  "null-check": {
+    "dirs": [
+      "./Projects/Data_Types/Null/Scripts/null:true",
+      "./Projects/Data_Types/Null/Scripts/not_null:false"
+    ],
+    "len": "2,25"
+  },
+  "int-char": {
+    "dirs": [
+      "./Projects/Data_Types/Simpler/Scripts/int_column:false",
+      "./Projects/Data_Types/Simpler/Scripts/char_column:false"
+    ],
+    "len": ""
+  },
+  "data-size": {
+    "dirs": [
+      "./Projects/Data_Types/Smaller/Scripts/char:true",
+      "./Projects/Data_Types/Smaller/Scripts/int:true",
+      "./Projects/Data_Types/Smaller/Scripts/varchar:true"
+    ],
+    "len": "10,255"
+  }
+}

@@ -18,7 +18,7 @@ fi
 
 # Display usage instructions
 usage() {
-    echo "Usage: $0 -out <output_dir> [-len <custom_lengths>] -script:\"<query_info>\" [...]"
+    echo "Usage: $0 -out <output_dir> [-len <custom_lengths>] -scripts:<query_info1> <query_info2> ..."
     exit 1
 }
 
@@ -33,7 +33,14 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -out) OUTPUT_DIR="$2"; shift 2 ;;
         -len) CUSTOM_LENGTHS="$2"; shift 2 ;;
-        -script:*) QUERY_INFO+=("${1#-script:}"); shift ;;
+        -scripts:*)
+            QUERY_INFO+=("${1#-scripts:}")
+            shift
+            while [[ $# -gt 0 && "$1" != -* ]]; do
+                QUERY_INFO+=("$1")
+                shift
+            done
+            ;;
         *) usage ;;
     esac
 done
@@ -118,6 +125,9 @@ run_sysbench() {
     --events=$EVENTS \
     --report-interval=$REPORT_INTERVAL \
     "$LUA_SCRIPT_PATH" "$MODE" >> "$LOG_FILE" 2>&1
+
+  echo "Log File Content:"
+  cat "$LOG_FILE"
 
   return $?
 }
@@ -234,7 +244,7 @@ for INFO in "${QUERY_INFO[@]}"; do
 
       process_script_benchmark "$QUERY_PATH" "$LOG_DIR_LENGTH" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$LENGTH"
 
-      RAW_RESULTS_FILE="${LOG_DIR_LENGTH}/length_${LENGTH}_cleanup.log"
+      RAW_RESULTS_FILE="${LOG_DIR_LENGTH}/$(basename "$QUERY_PATH")_${LENGTH}_cleanup.log"
       run_benchmark "$MAIN_SCRIPT" "cleanup" "$RAW_RESULTS_FILE"
     done
   else
@@ -243,7 +253,7 @@ for INFO in "${QUERY_INFO[@]}"; do
     RAW_RESULTS_FILE="$LOG_DIR/$(basename "$QUERY_PATH")_prepare.log"
     run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE"
 
-    process_script_benchmark "$QUERY_PATH" "$LOG_DIR" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$LENGTH"
+    process_script_benchmark "$QUERY_PATH" "$LOG_DIR" "$INSERT_SCRIPT" "$SELECT_SCRIPT"
 
     # Cleanup phase
     RAW_RESULTS_FILE="$LOG_DIR/$(basename "$QUERY_PATH")_cleanup.log"
