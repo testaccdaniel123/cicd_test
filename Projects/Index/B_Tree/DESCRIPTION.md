@@ -22,9 +22,9 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/count_row_changes/high_counts" \
-  -len "500,5000" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"
+  -var '{"length":[500,5000]}' \
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:length" \
+  "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/without_index:length"
 ```
 
 ### Code für Low Count Vergleich:
@@ -33,9 +33,9 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/count_row_changes/low_counts" \
-  -len "10,50" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/without_index:true"  
+  -var '{"length":[10,40]}' \
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/with_index:length" \
+  "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/count_row_changes/without_index:length"  
 ```
 
 ### Code unterschiedliche Select - Queries
@@ -44,7 +44,7 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/query_differences" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/query_differences:false" 
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/query_differences" 
 ```
 
 ### Nur Graphen erstellen für Select - Queries (log und csv- files müssen schon bestehen)

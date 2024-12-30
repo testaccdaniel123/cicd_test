@@ -21,9 +21,9 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Null" \
-  -len "2,25" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/null:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/not_null:false"
+  -var '{"length":[2,25]}' \
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/null:length" \
+  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/not_null"
 ```
 ### Nur Graphen erstellen für Null (log und csv- files müssen schon bestehen)
 ```bash

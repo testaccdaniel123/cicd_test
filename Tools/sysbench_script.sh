@@ -1,5 +1,7 @@
 which bash
 
+#!/bin/bash
+
 if [ -n "$GITHUB_ACTIONS" ]; then
     ENV_PATH="./db.env"
     PYTHON_PATH="./Tools/Python"
@@ -18,21 +20,20 @@ fi
 
 # Display usage instructions
 usage() {
-    echo "Usage: $0 -out <output_dir> [-len <custom_lengths>] -scripts:<query_info1> <query_info2> ..."
+    echo "Usage: $0 -out <output_dir> [-var <json_variables>] -scripts:<query_info1> <query_info2> ..."
     exit 1
 }
 
 # Initialize variables
 OUTPUT_DIR=""
-CUSTOM_LENGTHS=""
+JSON_VARIABLES=""
 QUERY_INFO=()
-NEEDS_CUSTOM_LENGTHS=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -out) OUTPUT_DIR="$2"; shift 2 ;;
-        -len) CUSTOM_LENGTHS="$2"; shift 2 ;;
+        -var) JSON_VARIABLES="$2"; shift 2 ;;
         -scripts:*)
             QUERY_INFO+=("${1#-scripts:}")
             shift
@@ -50,15 +51,19 @@ if [ -z "$OUTPUT_DIR" ] || [ "${#QUERY_INFO[@]}" -eq 0 ]; then
     usage
 fi
 
-# Handle queries with ":true" flag (requires custom lengths)
+# Validate queries against parsed JSON variables
 for INFO in "${QUERY_INFO[@]}"; do
-    [[ "$INFO" == *":true"* ]] && NEEDS_CUSTOM_LENGTHS=true
+    if [[ "$INFO" == *":"* ]]; then
+        KEYS_AFTER_COLON=$(echo "$INFO" | awk -F':' '{print $2}' | tr ',' ' ')
+        for KEY in $KEYS_AFTER_COLON; do
+              if ! echo "$JSON_VARIABLES" | jq -e ".\"$KEY\"" >/dev/null 2>&1; then
+                echo "Error: The variable '$KEY' in query '$INFO' is not defined in JSON_VARIABLES"
+                exit 1
+              fi
+        done
+    fi
 done
 
-if $NEEDS_CUSTOM_LENGTHS && [ -z "$CUSTOM_LENGTHS" ]; then
-    echo "Error: -len is required for queries marked with :true"
-    exit 1
-fi
 
 # Define file paths
 OUTPUT_FILE="$OUTPUT_DIR/sysbench_output.csv"
@@ -83,14 +88,14 @@ run_benchmark() {
   local SCRIPT_PATH="$1"
   local MODE="$2"
   local OUTPUT_FILE="$3"
-  local SCRIPT_NAME="$4"
+  local SCRIPT_NAME="${4:-}"
+  local COMBINATION="${5:-}"
 
   if [[ -n "$SCRIPT_NAME" ]]; then
-      echo "Running $(basename "$SCRIPT_PATH") for $TIME seconds ..."
+    echo "Running $(basename "$SCRIPT_PATH") for $TIME seconds ..."
   fi
   if [[ "$MODE" == "prepare" ]]; then
-      length=$(basename "$OUTPUT_FILE" | grep -o '[0-9]*')
-      echo "Preparing database for $(basename "$SCRIPT_PATH")${length:+ with length $length}"
+    echo "Preparing database for $(basename "$SCRIPT_PATH")${COMBINATION:+ with $(awk -F'_' '{for (i=1; i<=NF; i+=2) printf "%s: %s%s", $i, $(i+1), (i+2<=NF?" and ":"")}' <<< "$COMBINATION")}"
   fi
   [[ "$MODE" == "cleanup" ]] && echo -e "Cleaning up database for $(basename "$SCRIPT_PATH")\n"
 
@@ -125,9 +130,6 @@ run_sysbench() {
     --events=$EVENTS \
     --report-interval=$REPORT_INTERVAL \
     "$LUA_SCRIPT_PATH" "$MODE" >> "$LOG_FILE" 2>&1
-
-  echo "Log File Content:"
-  cat "$LOG_FILE"
 
   return $?
 }
@@ -185,7 +187,7 @@ process_script_benchmark() {
   local LOG_DIR="$2"
   local INSERT_SCRIPT="$3"
   local SELECT_SCRIPT="$4"
-  local LENGTH="${5:-}"
+  local COMBINATION="${5:-}"
 
   local SCRIPTS=()
   local IS_FROM_SELECT_DIR=false
@@ -202,11 +204,11 @@ process_script_benchmark() {
   for SCRIPT in "${SCRIPTS[@]}"; do
     if [ -f "$SCRIPT" ]; then
       local SCRIPT_NAME
-      if [ -n "$LENGTH" ]; then
+      if [ -n "$COMBINATION" ]; then
         if $IS_FROM_SELECT_DIR && [[ "$SCRIPT" == "$SELECT_SCRIPT"/* ]]; then
-          SCRIPT_NAME="${QUERY_PATH##*/}_${LENGTH}_select_$(basename "$SCRIPT" .lua)"
+          SCRIPT_NAME="${QUERY_PATH##*/}_${COMBINATION}_select_$(basename "$SCRIPT" .lua)"
         else
-          SCRIPT_NAME="${QUERY_PATH##*/}_${LENGTH}_$(basename "$SCRIPT" .lua | sed "s/^${QUERY_PATH##*/}_//")"
+          SCRIPT_NAME="${QUERY_PATH##*/}_${COMBINATION}_$(basename "$SCRIPT" .lua | sed "s/^${QUERY_PATH##*/}_//")"
         fi
       else
         if $IS_FROM_SELECT_DIR && [[ "$SCRIPT" == "$SELECT_SCRIPT"/* ]]; then
@@ -216,39 +218,74 @@ process_script_benchmark() {
         fi
       fi
       local RAW_RESULTS_FILE="$LOG_DIR/${SCRIPT_NAME}.log"
-      run_benchmark "$SCRIPT" "run" "$RAW_RESULTS_FILE" "$SCRIPT_NAME"
+      run_benchmark "$SCRIPT" "run" "$RAW_RESULTS_FILE" "$SCRIPT_NAME" "$COMBINATION"
     fi
   done
 }
 
+generate_combinations() {
+    local current_combination="$1"
+    shift
+    local keys=("$@")
+
+    if [ ${#keys[@]} -eq 0 ]; then
+        echo "$current_combination"
+        return
+    fi
+
+    local key="${keys[0]}"
+    local values=$(echo "$JSON_VARIABLES" | jq -r ".\"$key\"[]")
+    local remaining_keys=("${keys[@]:1}")
+
+    for value in $values; do
+        generate_combinations "${current_combination:+$current_combination,}${key}=$value" "${remaining_keys[@]}"
+    done
+}
+
 # Main benchmark loop
 for INFO in "${QUERY_INFO[@]}"; do
-  IFS=: read -r QUERY_PATH MULTIPLE_LENGTHS <<< "$INFO"
+  IFS=: read -r QUERY_PATH MULTIPLE_KEYS <<< "$INFO"
 
   MAIN_SCRIPT="${QUERY_PATH}/$(basename "$QUERY_PATH").lua"
   INSERT_SCRIPT="${QUERY_PATH}/$(basename "$QUERY_PATH")_insert.lua"
   SELECT_SCRIPT="${QUERY_PATH}/$(basename "$QUERY_PATH")_select"
   LOG_DIR="$OUTPUT_DIR/logs/$(basename "$QUERY_PATH")"
 
-  if [[ "$MULTIPLE_LENGTHS" == "true" ]]; then
-    IFS=',' read -r -a LENGTHS <<< "$CUSTOM_LENGTHS"
+  if [[ -n "$MULTIPLE_KEYS" ]]; then
+    IFS=',' read -r -a KEYS <<< "$MULTIPLE_KEYS"
 
-    for LENGTH in "${LENGTHS[@]}"; do
-      export CUSTOM_LENGTH=$((LENGTH - 1))
+    # Generate all combinations of key-value pairs
+    combinations=$(generate_combinations "" "${KEYS[@]}")
+    echo "daniel keys: ${KEYS[*]}"
+    echo "daniel: $combinations"
+    # Process each combination
+    while IFS=',' read -r combination; do
+        # Export key-value pairs for the current combination
+        IFS=',' read -ra key_value_pairs <<< "$combination"
+        for pair in "${key_value_pairs[@]}"; do
+            key="${pair%%=*}"
+            value="${pair#*=}"
+            export "$(echo "$key" | tr '[:lower:]' '[:upper:]')=$value"
+        done
 
-      LOG_DIR_LENGTH="$LOG_DIR/length_$LENGTH"
-      mkdir -p "$LOG_DIR_LENGTH"
+        # Create a directory name for the combination
+        combination_name=$(echo "$combination" | tr ',' '_' | tr '=' '_')
+        LOG_DIR_KEY_VALUE="$LOG_DIR/$combination_name"
+        mkdir -p "$LOG_DIR_KEY_VALUE"
 
-      RAW_RESULTS_FILE="${LOG_DIR_LENGTH}/$(basename "$QUERY_PATH")_${LENGTH}_prepare.log"
-      run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE"
+        # Prepare benchmark
+        RAW_RESULTS_FILE="${LOG_DIR_KEY_VALUE}/$(basename "$QUERY_PATH")_${combination_name}_prepare.log"
+        run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE" "" "$combination_name"
 
-      process_script_benchmark "$QUERY_PATH" "$LOG_DIR_LENGTH" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$LENGTH"
+        # Process script benchmark
+        process_script_benchmark "$QUERY_PATH" "$LOG_DIR_KEY_VALUE" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$combination_name"
 
-      RAW_RESULTS_FILE="${LOG_DIR_LENGTH}/$(basename "$QUERY_PATH")_${LENGTH}_cleanup.log"
-      run_benchmark "$MAIN_SCRIPT" "cleanup" "$RAW_RESULTS_FILE"
-    done
+        # Cleanup benchmark
+        RAW_RESULTS_FILE="${LOG_DIR_KEY_VALUE}/$(basename "$QUERY_PATH")_${combination_name}_cleanup.log"
+        run_benchmark "$MAIN_SCRIPT" "cleanup" "$RAW_RESULTS_FILE"
+    done <<< "$combinations"
   else
-    # Process normally : condition false
+    # Process normally when no keys specified
     mkdir -p "$LOG_DIR"
     RAW_RESULTS_FILE="$LOG_DIR/$(basename "$QUERY_PATH")_prepare.log"
     run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE"
