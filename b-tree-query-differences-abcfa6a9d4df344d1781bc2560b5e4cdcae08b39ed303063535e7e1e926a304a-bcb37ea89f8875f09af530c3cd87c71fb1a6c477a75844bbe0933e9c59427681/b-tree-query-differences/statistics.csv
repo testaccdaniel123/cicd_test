@@ -1,0 +1,11 @@
+Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum
+query_differences_insert,0,20312,60011,80323,16,80323,23,0,20.1854s,16,4376.82,5046.14,5331.97,5312.73,80738.28
+query_differences_select_column_prefix,22893,0,0,22893,22893,22893,0,0,18.0029s,22893,1.36,3.14,22.03,4.03,71975.48
+query_differences_select_combined_match_with_range,146317,0,0,146317,146317,146317,0,0,18.0011s,146317,0.26,0.49,19.34,0.68,71829.83
+query_differences_select_exact_with_prefix,97845,0,0,97845,97845,97845,0,0,18.0015s,97845,0.39,0.73,19.12,0.99,71874.18
+query_differences_select_full_match,190434,0,0,190434,190434,190434,0,0,18.0011s,190434,0.21,0.38,18.47,0.53,71788.25
+query_differences_select_leftmost_prefix,41264,0,0,41264,41264,41264,0,0,18.0024s,41264,0.75,1.74,20.50,2.35,71950.51
+query_differences_select_not_leftmost,8496,0,0,8496,8496,8496,0,0,18.0059s,8496,3.47,8.47,31.16,11.87,71997.17
+query_differences_select_range_values,10244,0,0,10244,10244,10244,0,0,18.0047s,10244,3.08,7.03,28.25,8.90,71995.25
+query_differences_select_range_with_like,119498,0,0,119498,119498,119498,0,0,18.0013s,119498,0.32,0.60,19.49,0.83,71850.59
+query_differences_select_skip_columns,52853,0,0,52853,52853,52853,0,0,18.0019s,52853,0.66,1.36,18.88,1.79,71929.25

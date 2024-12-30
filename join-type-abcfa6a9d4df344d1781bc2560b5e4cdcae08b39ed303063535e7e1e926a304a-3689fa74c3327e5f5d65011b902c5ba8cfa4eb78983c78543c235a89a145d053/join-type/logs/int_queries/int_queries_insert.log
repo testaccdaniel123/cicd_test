@@ -1,0 +1,53 @@
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 4
+Report intermediate results every 2 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 2s ] thds: 4 tps: 0.00 qps: 3244.59 (r/w/o: 0.00/809.15/2435.44) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 4s ] thds: 4 tps: 0.00 qps: 3353.54 (r/w/o: 0.00/838.63/2514.90) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 6s ] thds: 4 tps: 0.00 qps: 3459.13 (r/w/o: 0.00/864.53/2594.60) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 8s ] thds: 4 tps: 0.00 qps: 2875.92 (r/w/o: 0.00/718.98/2156.94) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 10s ] thds: 4 tps: 0.00 qps: 3172.01 (r/w/o: 0.00/793.00/2379.01) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 12s ] thds: 4 tps: 0.00 qps: 2300.01 (r/w/o: 0.00/575.00/1725.00) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 14s ] thds: 4 tps: 0.00 qps: 3010.07 (r/w/o: 0.00/752.52/2257.55) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 16s ] thds: 4 tps: 0.00 qps: 2429.92 (r/w/o: 0.00/607.48/1822.44) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 18s ] thds: 4 tps: 0.00 qps: 2636.07 (r/w/o: 0.00/659.02/1977.05) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 4 tps: 0.00 qps: 2380.03 (r/w/o: 0.00/595.01/1785.03) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 22s ] thds: 4 tps: 0.00 qps: 2423.94 (r/w/o: 0.00/605.98/1817.95) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 24s ] thds: 4 tps: 0.00 qps: 2364.04 (r/w/o: 0.00/591.01/1773.03) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 26s ] thds: 4 tps: 0.00 qps: 2367.91 (r/w/o: 0.00/591.98/1775.94) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 28s ] thds: 4 tps: 0.00 qps: 2676.09 (r/w/o: 0.00/669.02/2007.07) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 4 tps: 0.00 qps: 2708.02 (r/w/o: 0.00/677.01/2031.02) lat (ms,95%): 0.00 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            0
+        write:                           22000
+        other:                           66016
+        total:                           88016
+    transactions:                        4      (0.13 per sec.)
+    queries:                             88016  (2750.64 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          31.9980s
+    total number of events:              4
+
+Latency (ms):
+         min:                                31996.94
+         avg:                                31997.03
+         max:                                31997.27
+         95th percentile:                    32161.14
+         sum:                               127988.13
+
+Threads fairness:
+    events (avg/stddev):           1.0000/0.00
+    execution time (avg/stddev):   31.9970/0.00
+
