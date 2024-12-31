@@ -30,9 +30,7 @@ cd Tools
 cd ../../..
 cd Tools
 ./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Simpler \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/int_column:false" \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/char_column:false"
+  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Simpler
 ```
 
 

@@ -69,6 +69,7 @@ done
 OUTPUT_FILE="$OUTPUT_DIR/sysbench_output.csv"
 OUTPUT_FILE_INOFFICIAL="$OUTPUT_DIR/sysbench_output_inofficial.csv"
 STATISTICS_OUTPUT_FILE="$OUTPUT_DIR/statistics.csv"
+STATISTICS_OUTPUT_FILE_INOFFICIAL="$OUTPUT_DIR/statistics_inofficial.csv"
 
 # Sysbench configuration
 TIME=${TIME:-32}
@@ -82,7 +83,7 @@ mkdir -p "$OUTPUT_DIR"
 
 # Prepare CSV headers
 echo "Script,Time (s),Threads,TPS,QPS,Reads,Writes,Other,Latency (ms;95%),ErrPs,ReconnPs" > "$OUTPUT_FILE_INOFFICIAL"
-echo "Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum" > "$STATISTICS_OUTPUT_FILE"
+echo "Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum" > "$STATISTICS_OUTPUT_FILE_INOFFICIAL"
 
 run_benchmark() {
   local SCRIPT_PATH="$1"
@@ -161,7 +162,7 @@ extract_statistics() {
   local RAW_RESULTS_FILE="$1"
   local SCRIPT_NAME="$2"
 
-  # Extract SQL statistics and append to statistics.csv
+  # Extract SQL statistics and append to statistics_inofficial.csv
   read=$(awk '/read:/ {print $2}' "$RAW_RESULTS_FILE")
   write=$(awk '/write:/ {print $2}' "$RAW_RESULTS_FILE")
   other=$(awk '/other:/ {print $2}' "$RAW_RESULTS_FILE")
@@ -179,7 +180,7 @@ extract_statistics() {
   latency_sum=$(awk '/sum:/ {print $2}' "$RAW_RESULTS_FILE")
 
   # Append the extracted data to the statistics output file
-  echo "$SCRIPT_NAME,$read,$write,$other,$total,$transactions,$queries,$ignored_errors,$reconnects,$total_time,$total_events,$latency_min,$latency_avg,$latency_max,$latency_95th,$latency_sum" >> "$STATISTICS_OUTPUT_FILE"
+  echo "$SCRIPT_NAME,$read,$write,$other,$total,$transactions,$queries,$ignored_errors,$reconnects,$total_time,$total_events,$latency_min,$latency_avg,$latency_max,$latency_95th,$latency_sum" >> "$STATISTICS_OUTPUT_FILE_INOFFICIAL"
 }
 
 process_script_benchmark() {
@@ -256,8 +257,6 @@ for INFO in "${QUERY_INFO[@]}"; do
 
     # Generate all combinations of key-value pairs
     combinations=$(generate_combinations "" "${KEYS[@]}")
-    echo "daniel keys: ${KEYS[*]}"
-    echo "daniel: $combinations"
     # Process each combination
     while IFS=',' read -r combination; do
         # Export key-value pairs for the current combination
@@ -298,9 +297,14 @@ for INFO in "${QUERY_INFO[@]}"; do
   fi
 done
 
-python3 "$PYTHON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE"
+# Statistics csv generated
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$STATISTICS_OUTPUT_FILE_INOFFICIAL" "$STATISTICS_OUTPUT_FILE"
+echo "Combined CSV file created at $STATISTICS_OUTPUT_FILE"
+
+# Outputfile csv generated
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE" --exclude_columns "Time (s),Threads"
 echo "Combined CSV file created at $OUTPUT_FILE"
 
 # Generate plot after all tasks are completed
 echo "Generating plots..."
-python3 "$PYTHON_PATH/generatePlot.py" "$OUTPUT_FILE"
+python3 "$PYTHON_PATH/generatePlot.py" "$OUTPUT_FILE" "$STATISTICS_OUTPUT_FILE"
