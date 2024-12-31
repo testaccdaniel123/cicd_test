@@ -65,3 +65,10 @@ cd Tools
   -scripts:"YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/int_queries" \
   "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/varchar_queries:length"
 ```
+
+```bash
+cd ../..
+cd Tools
+./generate_graph.sh \
+  YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Output
+```

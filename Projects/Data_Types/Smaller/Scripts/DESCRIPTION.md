@@ -32,11 +32,7 @@ cd Tools
 cd ../../..
 cd Tools
 ./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Smaller \
-  10,255 \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/char:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/int:true" \
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Scripts/varchar:true"
+  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Smaller
 ```
 
 #### Notes

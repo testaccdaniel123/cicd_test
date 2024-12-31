@@ -30,10 +30,7 @@ cd Tools
 cd ../../..
 cd Tools
 ./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Null \
-  2,25 \
- "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/null:true" \
- "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/not_null:false" 
+  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Null
 ```
 
 #### Notes

@@ -43,8 +43,7 @@ cd Tools
 cd ../../..
 cd Tools
 ./sysbench_script.sh \
-  -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/query_differences" \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/query_differences" 
+  -out "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/query_differences" 
 ```
 
 ### Nur Graphen erstellen für Select - Queries (log und csv- files müssen schon bestehen)
@@ -52,6 +51,5 @@ cd Tools
 cd ../../..
 cd Tools
 ./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/query_differences \
- "YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Scripts/query_differences:false" 
+  YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/query_differences
 ```
