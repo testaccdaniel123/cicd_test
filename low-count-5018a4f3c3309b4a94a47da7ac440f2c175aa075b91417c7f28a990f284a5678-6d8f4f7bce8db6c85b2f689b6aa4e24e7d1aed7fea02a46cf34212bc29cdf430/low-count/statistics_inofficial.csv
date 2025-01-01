@@ -1,0 +1,9 @@
+Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)
+with_index_length_10_insert,0,8271,1505,9776,752,9776,0,0,8.0108s,752,8.69,10.65,24.58,12.98,8008.92
+with_index_length_10_select,36402,0,0,36402,12134,36402,0,0,8.0007s,12134,0.57,0.66,8.14,0.73,7987.38
+with_index_length_40_insert,0,7215,353,7568,176,7568,0,0,8.0231s,176,35.25,45.58,59.98,54.83,8022.20
+with_index_length_40_select,35058,0,0,35058,11686,35058,0,0,8.0011s,11686,0.61,0.68,8.15,0.75,7989.44
+without_index_length_10_insert,0,7666,1395,9061,697,9061,0,0,8.0089s,697,8.75,11.49,21.34,14.73,8007.06
+without_index_length_10_select,37401,0,0,37401,12467,37401,0,0,8.0007s,12467,0.57,0.64,8.19,0.72,7987.68
+without_index_length_40_insert,0,8035,393,8428,196,8428,0,0,8.0297s,196,32.00,40.96,62.69,51.94,8028.73
+without_index_length_40_select,35031,0,0,35031,11677,35031,0,0,8.0008s,11677,0.62,0.68,8.26,0.75,7988.61
