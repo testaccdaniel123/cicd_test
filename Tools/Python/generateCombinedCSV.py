@@ -8,7 +8,7 @@ def main():
     parser = argparse.ArgumentParser(description="Process sysbench output CSV file")
     parser.add_argument('input_file', type=str, help="Path to the input CSV file")
     parser.add_argument('output_file', type=str, help="Path to the output CSV file")
-    parser.add_argument('--exclude_columns', type=str, help="Comma-separated list of columns to sum (insert + select)", default="")
+    parser.add_argument('--select_columns', type=str, help="Comma-separated list of columns to sum (insert + select)", default="")
     parser.add_argument('--insert_columns', type=str, help="Comma-separated list of columns where insert is used", default="")
 
     args = parser.parse_args()
@@ -16,7 +16,7 @@ def main():
     # os.remove(args.input_file)
 
     headers = df.columns.tolist()
-    exclude_columns = args.exclude_columns.split(',') if args.exclude_columns else []
+    select_columns = args.select_columns.split(',') if args.select_columns else []
     insert_columns = args.insert_columns.split(',') if args.insert_columns else []
 
     df['Base_Script'] = df['Script'].str.extract(r'(.*?)(?:_(insert|select))')[0]
@@ -41,15 +41,14 @@ def main():
 
         for column in headers:
             if column != 'Script' and column != 'Base_Script':
-                if column in exclude_columns:
-                    if column in insert_columns:
-                        value = insert_row[column]
-                    else:
-                        value = select_row[column]
+                if column in select_columns:
+                    value = select_row[column]
+                elif column in insert_columns:
+                    value = insert_row[column]
                 else:
                     value = insert_row[column] + select_row[column]
 
-                if column in ['Time (s)', 'Threads'] and isinstance(value, (int, float)) and value.is_integer():
+                if column in ['Time (s)', 'Threads'] and isinstance(value, float) and value.is_integer():
                     merged[column] = f"{int(value)}"
                 elif isinstance(value, (int, float)):
                     merged[column] = f"{value:.2f}"
@@ -63,11 +62,13 @@ def main():
         matching_selects = select_rows[select_rows['Base_Script'] == base_script]
 
         if "Time (s)" in headers:
-            for _, insert_row in insert_data.iterrows():
-                matching_rows = matching_selects[matching_selects['Time (s)'] == insert_row['Time (s)']]
-                if not matching_rows.empty:
-                    select_row = matching_rows.iloc[0]
-                    combined.append(merge_rows(insert_row, select_row))
+            grouped_selects = matching_selects.groupby("Script")
+            for script, group in grouped_selects:
+                for _, insert_row in insert_data.iterrows():
+                    matching_rows = group[group['Time (s)'] == insert_row['Time (s)']]
+                    if not matching_rows.empty:
+                        for _, select_row in matching_rows.iterrows():
+                            combined.append(merge_rows(insert_row, select_row))
         else:
             for _, insert_row in insert_data.iterrows():
                 for _, select_row in matching_selects.iterrows():

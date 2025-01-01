@@ -83,7 +83,7 @@ mkdir -p "$OUTPUT_DIR"
 
 # Prepare CSV headers
 echo "Script,Time (s),Threads,TPS,QPS,Reads,Writes,Other,Latency (ms;95%),ErrPs,ReconnPs" > "$OUTPUT_FILE_INOFFICIAL"
-echo "Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum" > "$STATISTICS_OUTPUT_FILE_INOFFICIAL"
+echo "Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)" > "$STATISTICS_OUTPUT_FILE_INOFFICIAL"
 
 run_benchmark() {
   local SCRIPT_PATH="$1"
@@ -298,11 +298,11 @@ for INFO in "${QUERY_INFO[@]}"; do
 done
 
 # Statistics csv generated
-python3 "$PYTHON_PATH/generateCombinedCSV.py" "$STATISTICS_OUTPUT_FILE_INOFFICIAL" "$STATISTICS_OUTPUT_FILE"
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$STATISTICS_OUTPUT_FILE_INOFFICIAL" "$STATISTICS_OUTPUT_FILE" --insert_columns "Total Time"
 echo "Combined CSV file created at $STATISTICS_OUTPUT_FILE"
 
 # Outputfile csv generated
-python3 "$PYTHON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE" --exclude_columns "Time (s),Threads"
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE" --select_columns "Time (s),Threads"
 echo "Combined CSV file created at $OUTPUT_FILE"
 
 # Generate plot after all tasks are completed
