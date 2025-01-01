@@ -1,0 +1,7 @@
+Script,Read,Write,Other,Total,Transactions,Queries,Ignored Errors,Reconnects,Total Time,Total Events,Latency Min,Latency Avg,Latency Max,Latency 95th Percentile,Latency Sum
+selectivity_changes_length_10_insert,0,12014,31,12045,15,12045,0,0,8.5357s,15,524.60,569.01,610.92,612.21,8535.09
+selectivity_changes_length_10_select,30697,0,0,30697,30697,30697,0,0,8.0007s,30697,0.23,0.26,7.64,0.29,7973.11
+selectivity_changes_length_100_insert,0,12014,31,12045,15,12045,0,0,8.1840s,15,498.60,545.56,622.64,612.21,8183.35
+selectivity_changes_length_100_select,36538,0,0,36538,36538,36538,0,0,8.0007s,36538,0.19,0.22,7.66,0.24,7969.11
+selectivity_changes_length_500_insert,0,12014,31,12045,15,12045,0,0,8.2498s,15,511.63,549.95,631.85,569.67,8249.26
+selectivity_changes_length_500_select,37769,0,0,37769,37769,37769,0,0,8.0007s,37769,0.19,0.21,7.58,0.23,7967.12
