@@ -1,0 +1,7 @@
+Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)
+int_column_insert,0,8001,5,8006,2,8006,0,0,8.0219s,2,4009.28,4010.67,4012.05,3982.86,8021.33
+int_column_select_int_desc_sort,2134,0,0,2134,2134,2134,0,0,8.0029s,2134,3.12,3.75,12.07,4.10,7998.83
+int_column_select_int_simple_filter,40316,0,0,40316,40316,40316,0,0,8.0007s,40316,0.17,0.20,7.67,0.22,7963.85
+char_column_insert,0,8001,5,8006,2,8006,0,0,8.1038s,2,4010.71,4051.59,4092.46,4128.91,8103.17
+char_column_select_char_desc_sort,2073,0,0,2073,2073,2073,0,0,8.0036s,2073,3.23,3.86,11.54,4.25,8000.30
+char_column_select_char_simple_filter,40298,0,0,40298,40298,40298,0,0,8.0007s,40298,0.17,0.20,7.60,0.22,7965.58
