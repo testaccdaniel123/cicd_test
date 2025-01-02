@@ -1,0 +1,9 @@
+Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)
+with_index_length_400_insert,0,65949,182333,248282,588,248282,978,0,60.3127s,588,333.56,410.28,519.05,475.79,241245.49
+with_index_length_400_select,471810,0,0,471810,157270,471810,0,0,60.0012s,157270,0.85,1.52,18.68,1.93,239812.52
+with_index_length_4000_insert,0,60582,180445,241027,60,241027,81,0,62.0838s,60,3308.00,4138.86,4387.96,4358.09,248331.65
+with_index_length_4000_select,127884,0,0,127884,42628,127884,0,0,60.0054s,42628,2.66,5.63,21.98,6.79,239960.93
+without_index_length_400_insert,0,60652,172351,233003,560,233003,774,0,60.2411s,560,334.78,430.29,477.69,450.77,240959.75
+without_index_length_400_select,350736,0,0,350736,116912,350736,0,0,60.0021s,116912,1.04,2.05,20.21,2.57,239864.77
+without_index_length_4000_insert,0,64447,192422,256869,64,256869,79,0,61.7642s,64,3133.26,3860.19,4236.65,4203.93,247052.26
+without_index_length_4000_select,66600,0,0,66600,22200,66600,0,0,60.0097s,22200,5.66,10.81,26.88,12.08,239994.24
