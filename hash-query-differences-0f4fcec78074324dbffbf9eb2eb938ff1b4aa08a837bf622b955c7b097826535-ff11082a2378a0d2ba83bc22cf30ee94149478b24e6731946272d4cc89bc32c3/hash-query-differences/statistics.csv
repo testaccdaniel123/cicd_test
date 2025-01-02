@@ -1,0 +1,5 @@
+Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)
+combined_match_with_range,8627.00,12003.00,9.00,20639.00,8631.00,20639.00,0.00,0.00,8.9770s8.0014s,8631.00,2147.72,2245.00,2426.38,2406.81,16964.45
+full_match,30714.00,12003.00,9.00,42726.00,30718.00,42726.00,0.00,0.00,8.9770s8.0008s,30718.00,2147.24,2244.33,2424.93,2405.94,16942.33
+leftmost_prefix,6623.00,12003.00,9.00,18635.00,6627.00,18635.00,0.00,0.00,8.9770s8.0013s,6627.00,2147.83,2245.28,2425.79,2407.07,16965.14
+partial_match_range_query,8505.00,12003.00,9.00,20517.00,8509.00,20517.00,0.00,0.00,8.9770s8.0012s,8509.00,2147.74,2245.01,2425.87,2406.81,16962.90
