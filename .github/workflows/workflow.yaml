@@ -78,7 +78,7 @@ jobs:
               unzip -q artifact.zip -d ${{ env.output_dir }} && \
               rm artifact.zip
           else
-            echo "Artifact $ARTIFACT_NAME not found. Running new benchmark." && echo "should_run=true" >> $GITHUB_ENV
+            echo "Artifact $ARTIFACT_NAME not found. Running new Benchmark." && echo "should_run=true" >> $GITHUB_ENV
           fi
 
       - name: Cache sysbench (apt)
