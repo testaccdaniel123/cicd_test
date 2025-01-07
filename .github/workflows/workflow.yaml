@@ -18,11 +18,6 @@ jobs:
         test-type: [high-count, low-count, b-tree-query-differences, selectivity-change, hash-query-differences, join-type, null-check, int-char, data-size]
 
     env:
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      DB_NAME: ${{ secrets.DB_NAME }}
       TIME: 8
       THREADS: 1
       EVENTS: 0
@@ -107,8 +102,8 @@ jobs:
       - name: Set up MySQL
         if: env.should_run == 'true'
         run: |
-            sudo /etc/init.d/mysql start
-            mysql -e 'CREATE DATABASE $DB_NAME;' -u$DB_USER -p$DB_PASS 
+          sudo /etc/init.d/mysql start
+          mysql -h ${{ secrets.DB_HOST }} -P ${{ secrets.DB_PORT }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DB_NAME }};" 
 
       - name: Run sysbench script
         if: env.should_run == 'true'
