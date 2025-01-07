@@ -18,6 +18,11 @@ jobs:
         test-type: [high-count, low-count, b-tree-query-differences, selectivity-change, hash-query-differences, join-type, null-check, int-char, data-size]
 
     env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+      DB_NAME: ${{ secrets.DB_NAME }}
       TIME: 8
       THREADS: 1
       EVENTS: 0
@@ -73,7 +78,7 @@ jobs:
               unzip -q artifact.zip -d ${{ env.output_dir }} && \
               rm artifact.zip
           else
-            echo "Artifact $ARTIFACT_NAME not found. Running new Benchmark." && echo "should_run=true" >> $GITHUB_ENV
+            echo "Artifact $ARTIFACT_NAME not found. Running new benchmark." && echo "should_run=true" >> $GITHUB_ENV
           fi
 
       - name: Cache sysbench (apt)
@@ -97,13 +102,18 @@ jobs:
           sudo apt-get install -y sysbench
           python -m pip install --upgrade pip
           pip install pandas matplotlib
-          echo "Daniel: $(ls -l /var/cache/apt/archives)"
 
-      - name: Set up MySQL
+      - name: Start MySQL container
         if: env.should_run == 'true'
         run: |
-          sudo /etc/init.d/mysql start
-          mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DB_NAME }};" 
+          docker run --name mysql-${{ matrix.test-type }} -d \
+            -e MYSQL_ROOT_PASSWORD=$DB_PASS \
+            -e MYSQL_DATABASE=$DB_NAME \
+            -p $DB_PORT:3306 mysql:8.0
+          
+          echo "Waiting for MySQL..."
+          until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
+          echo "MySQL is ready!"
 
       - name: Run sysbench script
         if: env.should_run == 'true'
@@ -114,6 +124,12 @@ jobs:
             -out "${{ env.output_dir }}" \
             -var '${{ env.var }}' \
             -scripts:$(echo "${{ env.dirs_string }}" | sed 's/ / /g')
+
+      - name: Stop MySQL container
+        if: env.should_run == 'true'
+        run: |
+          docker stop mysql-${{ matrix.test-type }}
+          docker rm mysql-${{ matrix.test-type }}
 
       - name: Upload individual outputs
         if: env.should_run == 'true'
