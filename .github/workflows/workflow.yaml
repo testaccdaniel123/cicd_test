@@ -93,6 +93,13 @@ jobs:
             echo "${key}=${value}" >> $GITHUB_ENV
           done
 
+      - name: Cache sysbench (apt)
+        if: env.should_run == 'true'
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-sysbench-cache
+
       - name: Cache pip dependencies
         if: env.should_run == 'true'
         uses: actions/cache@v3
