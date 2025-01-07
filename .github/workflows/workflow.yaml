@@ -103,6 +103,7 @@ jobs:
         if: env.should_run == 'true'
         run: |
           sudo /etc/init.d/mysql start
+          sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO '${{ secrets.DB_USER }}'@'localhost' IDENTIFIED BY '${{ secrets.DB_PASS }}'; FLUSH PRIVILEGES;"
           mysql -h ${{ secrets.DB_HOST }} -P ${{ secrets.DB_PORT }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DB_NAME }};" 
 
       - name: Run sysbench script
@@ -114,12 +115,6 @@ jobs:
             -out "${{ env.output_dir }}" \
             -var '${{ env.var }}' \
             -scripts:$(echo "${{ env.dirs_string }}" | sed 's/ / /g')
-
-      - name: Stop MySQL container
-        if: env.should_run == 'true'
-        run: |
-          docker stop mysql-${{ matrix.test-type }}
-          docker rm mysql-${{ matrix.test-type }}
 
       - name: Upload individual outputs
         if: env.should_run == 'true'
