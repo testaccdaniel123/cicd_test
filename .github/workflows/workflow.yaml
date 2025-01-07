@@ -104,17 +104,11 @@ jobs:
           pip install pandas matplotlib
           echo "Daniel: $(ls -l /var/cache/apt/archives)"
 
-      - name: Start MySQL container
+      - name: Set up MySQL
         if: env.should_run == 'true'
         run: |
-          docker run --name mysql-${{ matrix.test-type }} -d \
-            -e MYSQL_ROOT_PASSWORD=$DB_PASS \
-            -e MYSQL_DATABASE=$DB_NAME \
-            -p $DB_PORT:3306 mysql:8.0
-          
-          echo "Waiting for MySQL..."
-          until docker exec mysql-${{ matrix.test-type }} mysqladmin --user=root --password=$DB_PASS --host=127.0.0.1 --port=$DB_PORT ping --silent; do sleep 1; done
-          echo "MySQL is ready!"
+            sudo /etc/init.d/mysql start
+            mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} 
 
       - name: Run sysbench script
         if: env.should_run == 'true'
