@@ -7,9 +7,9 @@ import sys
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Generate plots from CSV data.')
-    parser.add_argument('datafile', type=str, help='Path to the input CSV data file for time-based metrics')
+    parser.add_argument('runtime_file', type=str, help='Path to the input CSV data file for runtime data')
+    parser.add_argument('statistic_file', type=str, nargs='?', default=None, help='Path to the input CSV data file for statistics (optional)')
     parser.add_argument('metrics', type=str, nargs='*', help='List of metrics to plot (e.g., QPS Reads Writes). If empty, all metrics will be used.')
-    parser.add_argument('radarfile', type=str, help='Path to the input CSV data file for radar chart metrics')
     return parser.parse_args()
 
 def plot_metrics(args, datafile, detailed_pngs_dir, combined_pngs_dir):
@@ -68,26 +68,26 @@ def plot_radar_chart(radar_datafile, output_dir):
 
     columns_of_interest = ['Read (noq)', 'Write (noq)', 'Transactions (per s.)', 'Queries (per s.)', 'Total Events', 'Latency Avg (ms)']
     radar_data_of_interest = radar_data[['Script'] + columns_of_interest]
-    
+
     max_values = {col: radar_data_of_interest[col].max() for col in columns_of_interest}
     radar_data_percentages = radar_data_of_interest.copy()
-    
+
     for col in columns_of_interest:
         radar_data_percentages[col] = (radar_data_of_interest[col] / max_values[col]) * 100
-    
+
     metrics = columns_of_interest
     num_metrics = len(metrics)
-    
+
     angles = np.linspace(0, 2 * np.pi, num_metrics, endpoint=False).tolist()
     angles += angles[:1]
-    
+
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
-    
+
     for _, row in radar_data_percentages.iterrows():
         script_name = row['Script']
         sample = row[columns_of_interest].values
         sample = np.append(sample, sample[0])
-    
+
         ax.plot(angles, sample, label={script_name})
         ax.fill(angles, sample, alpha=0.25)
 
@@ -101,7 +101,7 @@ def plot_radar_chart(radar_datafile, output_dir):
     ], fontsize=12, color="black")
 
 
-# Title and legend
+    # Title and legend
     ax.set_title("Comparison of Metrics", fontsize=16, position=(0.5, 1.1), ha='center')
     ax.legend(loc='upper right', bbox_to_anchor=(1.1, 1.1))
     radar_output_file_path = os.path.join(output_dir, 'statistics.png')
@@ -111,28 +111,28 @@ def plot_radar_chart(radar_datafile, output_dir):
 
 def main():
     args = parse_arguments()
+    runtime = args.runtime_file
 
-    # Load CSV data
-    datafile = args.datafile
-    if not os.path.isfile(datafile):
-        print(f"Error: The file {datafile} does not exist.")
+    if not os.path.isfile(runtime):
+        print(f"Error: The file {runtime} does not exist.")
         sys.exit(1)
 
-    # Load CSV data for radar chart metrics
-    radarfile = args.radarfile
-    if not os.path.isfile(radarfile):
-        print(f"Error: The radar file {radarfile} does not exist.")
-        sys.exit(1)
-
-    png_dir = os.path.join(os.path.dirname(datafile),'pngs')
+    # Process CSV data for time-based metrics
+    png_dir = os.path.join(os.path.dirname(runtime), 'pngs')
     detailed_pngs_dir = os.path.join(png_dir, 'metric_comparison')
     combined_pngs_dir = os.path.join(png_dir, 'script_comparison')
-
     os.makedirs(detailed_pngs_dir, exist_ok=True)
     os.makedirs(combined_pngs_dir, exist_ok=True)
 
-    plot_metrics(args, datafile, detailed_pngs_dir, combined_pngs_dir)
-    plot_radar_chart(radarfile, png_dir)
+    plot_metrics(args, runtime, detailed_pngs_dir, combined_pngs_dir)
+
+    # Process radar chart metrics (if radarfile is provided)
+    statistic = args.statistic_file
+    if statistic:
+        if not os.path.isfile(statistic):
+            print(f"Error: The radar file {statistic} does not exist.")
+            sys.exit(1)
+        plot_radar_chart(statistic, png_dir)
 
     print("Plots generated successfully.")
     sys.exit(0)
