@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-type: [high-count, low-count, b-tree-query-differences, selectivity-change, hash-query-differences, join-type, null-check, int-char, data-size]
+        test-type: [high-count, low-count, b-tree-query-differences, selectivity-change, hash-query-differences, join-type, null-check, int-char, number-type, string-type,string-type-length]
 
     env:
       DB_HOST: ${{ secrets.DB_HOST }}
@@ -80,13 +80,6 @@ jobs:
           else
             echo "Artifact $ARTIFACT_NAME not found. Running new benchmark." && echo "should_run=true" >> $GITHUB_ENV
           fi
-
-      - name: Cache sysbench (apt)
-        if: env.should_run == 'true'
-        uses: actions/cache@v3
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-sysbench-cache
 
       - name: Cache pip dependencies
         if: env.should_run == 'true'
