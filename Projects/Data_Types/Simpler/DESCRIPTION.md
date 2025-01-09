@@ -20,7 +20,7 @@ Untersucht werden:
 cd ../../..
 cd Tools
 ./sysbench_script.sh \
-  -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Simpler" \
+  -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Output" \
   -scripts:"YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/int_column" \
   "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/char_column"
 ```
@@ -30,7 +30,7 @@ cd Tools
 cd ../../..
 cd Tools
 ./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Simpler
+  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Output
 ```
 
 

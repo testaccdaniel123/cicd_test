@@ -6,8 +6,8 @@ if [ -n "$GITHUB_ACTIONS" ]; then
     ENV_PATH="./db.env"
     PYTHON_PATH="./Tools/Python"
 else
-    ENV_PATH="YOUR_PATH_TO_PROJECT/db.env"
-    PYTHON_PATH="YOUR_PATH_TO_PROJECT/Tools/Python"
+    ENV_PATH="/Users/danielmendes/Desktop/Bachelorarbeit/Repo/db.env"
+    PYTHON_PATH="/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Tools/Python"
 fi
 
 # Load environment variables
@@ -66,10 +66,10 @@ done
 
 
 # Define file paths
-OUTPUT_FILE="$OUTPUT_DIR/sysbench_output.csv"
-OUTPUT_FILE_INOFFICIAL="$OUTPUT_DIR/sysbench_output_inofficial.csv"
-STATISTICS_OUTPUT_FILE="$OUTPUT_DIR/statistics.csv"
-STATISTICS_OUTPUT_FILE_INOFFICIAL="$OUTPUT_DIR/statistics_inofficial.csv"
+RUNTIME_FILE="$OUTPUT_DIR/sysbench_runtime.csv"
+RUNTIME_FILE_TEMP="$OUTPUT_DIR/sysbench_runtime_temp.csv"
+STATISTICS_FILE="$OUTPUT_DIR/sysbench_statistics.csv"
+STATISTICS_FILE_TEMP="$OUTPUT_DIR/sysbench_statistics_temp.csv"
 
 # Sysbench configuration
 TIME=${TIME:-32}
@@ -82,8 +82,8 @@ rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
 # Prepare CSV headers
-echo "Script,Time (s),Threads,TPS,QPS,Reads,Writes,Other,Latency (ms;95%),ErrPs,ReconnPs" > "$OUTPUT_FILE_INOFFICIAL"
-echo "Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)" > "$STATISTICS_OUTPUT_FILE_INOFFICIAL"
+echo "Script,Time (s),Threads,TPS,QPS,Reads,Writes,Other,Latency (ms;95%),ErrPs,ReconnPs" > "$RUNTIME_FILE_TEMP"
+echo "Script,Read (noq),Write (noq),Other (noq),Total (noq),Transactions (per s.),Queries (per s.),Ignored Errors (per s.),Reconnects (per s.),Total Time (s),Total Events,Latency Min (ms),Latency Avg (ms),Latency Max (ms),Latency 95th Percentile (ms),Latency Sum (ms)" > "$STATISTICS_FILE_TEMP"
 
 run_benchmark() {
   local SCRIPT_PATH="$1"
@@ -96,7 +96,7 @@ run_benchmark() {
     echo "Running $(basename "$SCRIPT_PATH") for $TIME seconds ..."
   fi
   if [[ "$MODE" == "prepare" ]]; then
-    echo "Preparing database for $(basename "$SCRIPT_PATH")${COMBINATION:+ with $(awk -F'_' '{for (i=1; i<=NF; i+=2) printf "%s: %s%s", $i, $(i+1), (i+2<=NF?" and ":"")}' <<< "$COMBINATION")}"
+    echo "Preparing database for $(basename "$SCRIPT_PATH")${COMBINATION:+ with $COMBINATION}"
   fi
   [[ "$MODE" == "cleanup" ]] && echo -e "Cleaning up database for $(basename "$SCRIPT_PATH")\n"
 
@@ -153,7 +153,7 @@ extract_run_data() {
     err_per_sec=$(echo "$line" | awk -F 'err/s: ' '{print $2}' | awk '{print $1}')
     reconn_per_sec=$(echo "$line" | awk -F 'reconn/s: ' '{print $2}' | awk '{print $1}')
 
-    echo "$SCRIPT_NAME,$time,$threads,$tps,$qps,$reads,$writes,$other,$latency,$err_per_sec,$reconn_per_sec" >> "$OUTPUT_FILE_INOFFICIAL"
+    echo "$SCRIPT_NAME,$time,$threads,$tps,$qps,$reads,$writes,$other,$latency,$err_per_sec,$reconn_per_sec" >> "$RUNTIME_FILE_TEMP"
   done
 }
 
@@ -180,7 +180,7 @@ extract_statistics() {
   latency_sum=$(awk '/sum:/ {print $2}' "$RAW_RESULTS_FILE")
 
   # Append the extracted data to the statistics output file
-  echo "$SCRIPT_NAME,$read,$write,$other,$total,$transactions,$queries,$ignored_errors,$reconnects,$total_time,$total_events,$latency_min,$latency_avg,$latency_max,$latency_95th,$latency_sum" >> "$STATISTICS_OUTPUT_FILE_INOFFICIAL"
+  echo "$SCRIPT_NAME,$read,$write,$other,$total,$transactions,$queries,$ignored_errors,$reconnects,$total_time,$total_events,$latency_min,$latency_avg,$latency_max,$latency_95th,$latency_sum" >> "$STATISTICS_FILE_TEMP"
 }
 
 process_script_benchmark() {
@@ -268,19 +268,19 @@ for INFO in "${QUERY_INFO[@]}"; do
         done
 
         # Create a directory name for the combination
-        combination_name=$(echo "$combination" | tr ',' '_' | tr '=' '_')
-        LOG_DIR_KEY_VALUE="$LOG_DIR/$combination_name"
+        COMBINATION_NAME=$(echo "$combination" | sed -E 's/(^|,)num_rows=[^,]*//g;s/^,//;s/,$//' | tr ',' '_' | tr '=' '_')
+        LOG_DIR_KEY_VALUE="$LOG_DIR/$COMBINATION_NAME"
         mkdir -p "$LOG_DIR_KEY_VALUE"
 
         # Prepare benchmark
-        RAW_RESULTS_FILE="${LOG_DIR_KEY_VALUE}/$(basename "$QUERY_PATH")_${combination_name}_prepare.log"
-        run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE" "" "$combination_name"
+        RAW_RESULTS_FILE="${LOG_DIR_KEY_VALUE}/$(basename "$QUERY_PATH")_${COMBINATION_NAME}_prepare.log"
+        run_benchmark "$MAIN_SCRIPT" "prepare" "$RAW_RESULTS_FILE" "" "$COMBINATION_NAME"
 
         # Process script benchmark
-        process_script_benchmark "$QUERY_PATH" "$LOG_DIR_KEY_VALUE" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$combination_name"
+        process_script_benchmark "$QUERY_PATH" "$LOG_DIR_KEY_VALUE" "$INSERT_SCRIPT" "$SELECT_SCRIPT" "$COMBINATION_NAME"
 
         # Cleanup benchmark
-        RAW_RESULTS_FILE="${LOG_DIR_KEY_VALUE}/$(basename "$QUERY_PATH")_${combination_name}_cleanup.log"
+        RAW_RESULTS_FILE="${LOG_DIR_KEY_VALUE}/$(basename "$QUERY_PATH")_${COMBINATION_NAME}_cleanup.log"
         run_benchmark "$MAIN_SCRIPT" "cleanup" "$RAW_RESULTS_FILE"
     done <<< "$combinations"
   else
@@ -298,13 +298,13 @@ for INFO in "${QUERY_INFO[@]}"; do
 done
 
 # Statistics csv generated
-python3 "$PYTHON_PATH/generateCombinedCSV.py" "$STATISTICS_OUTPUT_FILE_INOFFICIAL" "$STATISTICS_OUTPUT_FILE" --insert_columns "Total Time"
-echo "Combined CSV file created at $STATISTICS_OUTPUT_FILE"
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$STATISTICS_FILE_TEMP" "$STATISTICS_FILE" --insert_columns "Total Time"
+echo "Combined CSV file created at $STATISTICS_FILE"
 
 # Outputfile csv generated
-python3 "$PYTHON_PATH/generateCombinedCSV.py" "$OUTPUT_FILE_INOFFICIAL" "$OUTPUT_FILE" --select_columns "Time (s),Threads"
-echo "Combined CSV file created at $OUTPUT_FILE"
+python3 "$PYTHON_PATH/generateCombinedCSV.py" "$RUNTIME_FILE_TEMP" "$RUNTIME_FILE" --select_columns "Time (s),Threads"
+echo "Combined CSV file created at $RUNTIME_FILE"
 
 # Generate plot after all tasks are completed
 echo "Generating plots..."
-python3 "$PYTHON_PATH/generatePlot.py" "$OUTPUT_FILE" "$STATISTICS_OUTPUT_FILE"
+python3 "$PYTHON_PATH/generatePlot.py" "$RUNTIME_FILE" "$STATISTICS_FILE"
