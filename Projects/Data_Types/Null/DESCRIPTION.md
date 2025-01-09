@@ -20,8 +20,8 @@ Untersucht werden:
 cd ../../..
 cd Tools
 ./sysbench_script.sh \
-  -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Null" \
-  -var '{"length":[2,25]}' \
+  -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Output" \
+  -var '{"length":[0,10,100]}' \
   -scripts:"YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/null:length" \
   "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Scripts/not_null"
 ```
@@ -30,7 +30,7 @@ cd Tools
 cd ../../..
 cd Tools
 ./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Output/Null
+  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Null/Output
 ```
 
 #### Notes
