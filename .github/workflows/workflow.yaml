@@ -23,10 +23,10 @@ jobs:
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASS: ${{ secrets.DB_PASS }}
       DB_NAME: ${{ secrets.DB_NAME }}
-      TIME: 8
+      TIME: 24
       THREADS: 1
       EVENTS: 0
-      REPORT_INTERVAL: 1
+      REPORT_INTERVAL: 3
       GENERAL_PATHS: "./.github/workflows ./.github/pattern.json ./Tools/Python ./Tools/sysbench_script.sh"
 
     steps:
