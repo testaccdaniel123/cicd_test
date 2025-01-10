@@ -6,8 +6,8 @@ if [ -n "$GITHUB_ACTIONS" ]; then
     ENV_PATH="./db.env"
     PYTHON_PATH="./Tools/Python"
 else
-    ENV_PATH="/Users/danielmendes/Desktop/Bachelorarbeit/Repo/db.env"
-    PYTHON_PATH="/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Tools/Python"
+    ENV_PATH="YOUR_PATH_TO_PROJECT/db.env"
+    PYTHON_PATH="YOUR_PATH_TO_PROJECT/Tools/Python"
 fi
 
 # Load environment variables
