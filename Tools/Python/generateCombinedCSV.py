@@ -4,11 +4,10 @@ import re
 import os
 
 def main():
-    # Set up argument parser
     parser = argparse.ArgumentParser(description="Process sysbench output CSV file")
     parser.add_argument('input_file', type=str, help="Path to the input CSV file")
     parser.add_argument('output_file', type=str, help="Path to the output CSV file")
-    parser.add_argument('--select_columns', type=str, help="Comma-separated list of columns to sum (insert + select)", default="")
+    parser.add_argument('--select_columns', type=str, help="Comma-separated list of columns where select is used", default="")
     parser.add_argument('--insert_columns', type=str, help="Comma-separated list of columns where insert is used", default="")
 
     args = parser.parse_args()
@@ -16,8 +15,8 @@ def main():
     # os.remove(args.input_file)
 
     headers = df.columns.tolist()
-    select_columns = args.select_columns.split(',') if args.select_columns else []
-    insert_columns = args.insert_columns.split(',') if args.insert_columns else []
+    select_columns = args.select_columns.split(';') if args.select_columns else []
+    insert_columns = args.insert_columns.split(';') if args.insert_columns else []
 
     df['Base_Script'] = df['Script'].str.extract(r'(.*?)(?:_(insert|select))')[0]
     insert_rows = df[df['Script'].str.endswith('_insert')]
@@ -26,6 +25,10 @@ def main():
     combined = []
 
     def merge_rows(insert_row, select_row):
+        # 1) no multiple selects and no multiple lens => ex.: int_queries_select => int_queries
+        # 2) multiple selects but no multiple lens => ex.: query_differences_select_column_prefix => column_prefix
+        # 3) multiple lens but no multiple selects => ex.: with_index_500_select => with_index_500
+        # 4) multiple selects and multiple lens => ex.: null_2_select_default_null_count_null => default_null_count_null_2
         match = re.match(r'^(?:(?:[a-zA-Z]*_)*?(\d+)_select_)?(.*?)(?:_select)?$', select_row['Script'])
         if match:
             group1 = match.group(1)
