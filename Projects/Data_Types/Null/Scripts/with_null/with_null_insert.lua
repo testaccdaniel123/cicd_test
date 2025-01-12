@@ -1,5 +1,5 @@
 local num_rows = 4000
-local every_n_is_null = tonumber(os.getenv("LENGTH")) or 0
+local every_n_is_null = tonumber(os.getenv("EVERY")) or 0
 
 function delete_data()
     local delete_kunden_query = "DELETE FROM KUNDEN;"
@@ -14,7 +14,7 @@ function insert_data()
     for i = 1, num_rows do
         local kunden_id = i
         local name
-        if i % every_n_is_null == 0 then
+        if every_n_is_null ~= 0 and i % every_n_is_null == 0 then
             name = "NULL"
         else
             name= string.format("Kunde_%d", i)
