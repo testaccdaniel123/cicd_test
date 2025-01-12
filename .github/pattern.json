@@ -38,11 +38,9 @@
   },
   "null-check": {
     "dirs": [
-      "./Projects/Data_Types/Null/Scripts/with_null:length",
       "./Projects/Data_Types/Null/Scripts/with_null",
       "./Projects/Data_Types/Null/Scripts/not_null"
-    ],
-    "var": {"every":[5]}
+    ]
   },
   "int-char": {
     "dirs": [
@@ -58,14 +56,14 @@
   },
   "string-type": {
     "dirs": [
-      "./Projects/Data_Types/Smaller/Scripts/string:typ,num_rows"
+      "./Projects/Data_Types/Smaller/Scripts/string:typ;num_rows"
     ],
     "var": {"typ":["char_4","char_64","varchar_4","varchar_64"],"num_rows":[2000]}
   },
   "string-type-length": {
     "dirs": [
-      "./Projects/Data_Types/Smaller/Scripts/string:typ,length,num_rows"
+      "./Projects/Data_Types/Smaller/Scripts/string:typ;length;num_rows:Total Time (s);Write (noq)::Time (s);Threads;Writes:"
     ],
-    "var": {"typ":["char_64","varchar_64"],"length":[60,255],"num_rows":[2000]}
+    "var": {"typ":["char_255","varchar_255"],"length":[56,240],"num_rows":[2000]}
   }
 }

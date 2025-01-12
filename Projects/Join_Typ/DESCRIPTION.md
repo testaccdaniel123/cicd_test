@@ -61,9 +61,9 @@ cd ../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Output" \
-  -var '{"length":[1,64]}' \
-  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/int_queries" \
-  "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/varchar_queries:length"
+  -var '{"length":[1, 64]}' \
+  -scripts:"YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/varchar_queries:length" \
+  "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Scripts/int_queries"
 ```
 
 ```bash
