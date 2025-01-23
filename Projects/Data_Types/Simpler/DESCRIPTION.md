@@ -22,10 +22,10 @@ cd ../../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Output" \
-  -scripts:'[
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/int_column",
-  "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/char_column"
-  ]'
+  -scripts '{
+    "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/int_column": {},
+    "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Simpler/Scripts/char_column": {}
+  }'
 ```
 
 ### Nur Graphen erstellen für Int/Char - Vergleich: (log und csv- files müssen schon bestehen)
