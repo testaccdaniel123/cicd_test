@@ -42,14 +42,17 @@ cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Views/Output" \
   -var '{"length":[1000],"refresh":["every","once"]}' \
-  -scripts:'[
-  "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/mat_view:length;refresh"
-  ]'
+  -scripts '{
+    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/mat_view": {
+      "vars": "length,refresh",
+      "db": "postgres"
+    }
+  }'
 ```
 
 ### Nur Graphen erstellen für Select - Queries (log und csv- files müssen schon bestehen)
 ```bash
-cd ../../..
+cd ../..
 cd Tools
 ./generate_graph.sh \
   YOUR_PATH_TO_PROJECT/Projects/Views/Output

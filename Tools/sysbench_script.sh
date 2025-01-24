@@ -3,7 +3,7 @@ which bash
 if [ -n "$GITHUB_ACTIONS" ]; then
     ABS_PATH="."
 else
-    ABS_PATH="YOUR_PATH_TO_PROJECT"
+    ABS_PATH="/Users/danielmendes/Desktop/Bachelorarbeit/Repo"
 fi
 PYTHON_PATH="${ABS_PATH}/Tools/Python"
 
@@ -184,9 +184,9 @@ process_script_benchmark() {
       local SCRIPT_NAME
       if [ -n "$COMBINATION" ]; then
         if $IS_FROM_SELECT_DIR && [[ "$SCRIPT" == "$SELECT_SCRIPT"/* ]]; then
-          SCRIPT_NAME="${SCRIPT_PATH##*/}_${COMBINATION}_select_$(basename "$SCRIPT" .lua)"
+          SCRIPT_NAME="${SCRIPT_PATH##*/}_comb_${COMBINATION}_select_$(basename "$SCRIPT" .lua)"
         else
-          SCRIPT_NAME="${SCRIPT_PATH##*/}_${COMBINATION}_$(basename "$SCRIPT" .lua | sed "s/^${SCRIPT_PATH##*/}_//")"
+          SCRIPT_NAME="${SCRIPT_PATH##*/}_comb_${COMBINATION}_$(basename "$SCRIPT" .lua | sed "s/^${SCRIPT_PATH##*/}_//")"
         fi
       else
         if $IS_FROM_SELECT_DIR && [[ "$SCRIPT" == "$SELECT_SCRIPT"/* ]]; then

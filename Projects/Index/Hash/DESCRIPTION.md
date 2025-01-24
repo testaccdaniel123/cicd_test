@@ -40,3 +40,11 @@ cd Tools
     "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Scripts/query_differences": {}
   }'
 ```
+
+### Nur Graphen erstellen für Select - Queries (log und csv- files müssen schon bestehen)
+```bash
+cd ../../..
+cd Tools
+./generate_graph.sh \
+  YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Output/query_differences
+```
