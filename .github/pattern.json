@@ -1,89 +1,34 @@
 {
-  "high-count": {
+  "view-comparison": {
     "scripts": {
-      "./Projects/Index/B_Tree/Scripts/count_row_changes/with_index": {
+      "./Projects/Views/Scripts/virtual_view": {
         "vars": "length"
       },
-      "./Projects/Index/B_Tree/Scripts/count_row_changes/without_index": {
-        "vars": "length"
-      }
-    },
-    "var": {"length": [400, 4000]}
-  },
-  "low-count": {
-    "scripts": {
-      "./Projects/Index/B_Tree/Scripts/count_row_changes/with_index": {
+      "./Projects/Views/Scripts/with_trigger": {
         "vars": "length"
       },
-      "./Projects/Index/B_Tree/Scripts/count_row_changes/without_index": {
+      "./Projects/Views/Scripts/mat_view": {
+        "vars": "length",
+        "db": "postgres"
+      }
+    },
+    "var": {"length":[1000]}
+  },
+  "only-mysql": {
+    "scripts": {
+      "./Projects/Views/Scripts/virtual_view": {
         "vars": "length"
       }
     },
-    "var": {"length": [10, 40]}
+    "var": {"length":[1000]}
   },
-  "b-tree-query-differences": {
+  "only-postgres": {
     "scripts": {
-      "./Projects/Index/B_Tree/Scripts/query_differences": {}
-    }
-  },
-  "selectivity-change": {
-    "scripts": {
-      "./Projects/Index/Hash/Scripts/selectivity_changes": {"vars": "length"}
-    },
-    "var": {"length": [10, 100, 500]}
-  },
-  "hash-query-differences": {
-    "scripts": {
-      "./Projects/Index/Hash/Scripts/query_differences": {}
-    }
-  },
-  "join-type": {
-    "scripts": {
-      "./Projects/Join_Typ/Scripts/varchar_queries": {
-        "vars": "length"
-      },
-      "./Projects/Join_Typ/Scripts/int_queries": {}
-    },
-    "var": {"length": [1, 64]}
-  },
-  "null-check": {
-    "scripts": {
-      "./Projects/Data_Types/Null/Scripts/with_null": {},
-      "./Projects/Data_Types/Null/Scripts/not_null": {}
-    }
-  },
-  "int-char": {
-    "scripts": {
-      "./Projects/Data_Types/Simpler/Scripts/int_column": {},
-      "./Projects/Data_Types/Simpler/Scripts/char_column": {}
-    }
-  },
-  "number-type": {
-    "scripts": {
-      "./Projects/Data_Types/Smaller/Scripts/int": {
-        "vars": "datatyp"
+      "./Projects/Views/Scripts/mat_view": {
+        "vars": "length",
+        "db": "postgres"
       }
     },
-    "var": {"datatyp":["smallint_13","smallint_16","mediumint_24","int_32","bigint_64","decimal_65"]}
-  },
-  "string-type": {
-    "scripts": {
-      "./Projects/Data_Types/Smaller/Scripts/string": {
-        "vars": "typ,num_rows"
-      }
-    },
-    "var": {"typ":["char_4","char_64","varchar_4","varchar_64"],"num_rows":[2000]}
-  },
-  "string-type-length": {
-    "scripts":{
-      "./Projects/Data_Types/Smaller/Scripts/string": {
-        "vars": "typ,length,num_rows",
-        "stats_select_columns": "Total Time (s),Write (noq)",
-        "stats_insert_columns": "",
-        "runtime_select_columns": "Time (s),Threads,Writes",
-        "runtime_insert_columns": ""
-      }
-    },
-    "var": {"typ":["char_255","varchar_255"],"length":[56,240],"num_rows":[2000]}
+    "var": {"length":[1000]}
   }
 }
