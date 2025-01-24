@@ -1,4 +1,3 @@
 .DS_Store
 .idea
-pac_gh.env
-db.env
+gh-secrets.env

@@ -7,16 +7,16 @@ def main():
     parser = argparse.ArgumentParser(description="Process sysbench output CSV file")
     parser.add_argument('input_file', type=str, help="Path to the input CSV file")
     parser.add_argument('output_file', type=str, help="Path to the output CSV file")
-    parser.add_argument('--select_columns', type=str, help="Comma-separated list of columns where select is used", default="")
-    parser.add_argument('--insert_columns', type=str, help="Comma-separated list of columns where insert is used", default="")
+    parser.add_argument('--select_columns', type=str, help="Comma-separated list of columns where only the select value is used", default="")
+    parser.add_argument('--insert_columns', type=str, help="Comma-separated list of columns where only the insert value is used", default="")
 
     args = parser.parse_args()
     df = pd.read_csv(args.input_file)
     # os.remove(args.input_file)
 
     headers = df.columns.tolist()
-    select_columns = args.select_columns.split(';') if args.select_columns else []
-    insert_columns = args.insert_columns.split(';') if args.insert_columns else []
+    select_columns = args.select_columns.split(',') if args.select_columns else []
+    insert_columns = args.insert_columns.split(',') if args.insert_columns else []
 
     df['Base_Script'] = df['Script'].str.extract(r'(.*?)(?:_(insert|select))')[0]
     insert_rows = df[df['Script'].str.endswith('_insert')]
@@ -27,18 +27,14 @@ def main():
     def merge_rows(insert_row, select_row):
         # 1) no multiple selects and no multiple lens => ex.: int_queries_select => int_queries
         # 2) multiple selects but no multiple lens => ex.: query_differences_select_column_prefix => column_prefix
-        # 3) multiple lens but no multiple selects => ex.: with_index_500_select => with_index_500
+        # 3) multiple lens but no multiple selects => ex.: with_index_length_500_select => with_index_length_500
         # 4) multiple selects and multiple lens => ex.: null_2_select_default_null_count_null => default_null_count_null_2
-        match = re.match(r'^(?:(?:[a-zA-Z]*_)*?(\d+)_select_)?(.*?)(?:_select)?$', select_row['Script'])
+        match = re.search(r"(.*?)_comb_(.*?)(?=_select).*?select_?(.*)", select_row['Script'])
         if match:
-            group1 = match.group(1)
-            group2 = match.group(2)
-
-            if group1 is not None:
-                script_name = f"{group2}_{group1}"
-            else:
-                parts = group2.split("_select")
-                script_name = parts[-1].lstrip("_") if parts else group2
+            group1, group2, group3 = match.groups()
+            script_name = f"{group3}_{group2}" if group3 else f"{group1}_{group2}"
+        else:
+            script_name = re.sub(r'^.*?_select_|_select', '', select_row['Script'])
 
         merged = {'Script': script_name}
 
