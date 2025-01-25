@@ -12,14 +12,18 @@ def parse_arguments():
     parser.add_argument('metrics', type=str, nargs='*', help='List of metrics to plot (e.g., QPS Reads Writes). If empty, all metrics will be used.')
     return parser.parse_args()
 
+# Label from script-examples
+# 1. int_queries_select => int_queries
+# 2. varchar_queries_comb_length_1_select => varchar_queries_length_1
+# 3. query_differences_select_column_prefix => column_prefix
+# 4. mat_view_comb_length_1000_refresh_every_select_query_table_mat => query_table_mat_length_1000_refresh_every
 def get_label_from_scripts(scripts_list):
     script_name = scripts_list[0]
     dir_name = ""
-    with_comb = False
+    with_comb = "_comb_" in script_name
 
-    if "_comb_" in script_name:
+    if with_comb:
         dir_name, script_name = script_name.split("_comb_")
-        with_comb = True
 
     if len(scripts_list) == 1:
         if "_select_" in script_name:
@@ -28,10 +32,10 @@ def get_label_from_scripts(scripts_list):
         elif "_select" in script_name:
             base_name = script_name.split("_select")[0]
             return f"{dir_name}_{base_name}" if dir_name else base_name
-        else:
-            return script_name
-    else:
-        return f"{script_name.split('_select_')[0]}" if len(dir_name) == 0 else f"{dir_name}_{script_name.split('_select_')[0]}"
+        return script_name
+
+    base_name = script_name.split('_select_')[0]
+    return f"{dir_name}_{base_name}" if dir_name else base_name
 
 def plot_metrics(args, datafile, detailed_pngs_dir, combined_pngs_dir):
     data = pd.read_csv(datafile)
@@ -60,7 +64,7 @@ def plot_metrics(args, datafile, detailed_pngs_dir, combined_pngs_dir):
 
             for script_data, scripts_list in script_data_dict.items():
                 script_data_all = data[data['Script'] == scripts_list[0]]
-                if len(script_data_dict.items()) == 1:
+                if len(scripts_list) > 1:
                     cleaned_script_names = {script.split("_comb_")[0] if "_comb_" in script else script.split("_select")[0] for script in scripts_list}
                     for name in cleaned_script_names:
                         plt.plot(script_data_all['Time (s)'], script_data_all[measure], label=name)
