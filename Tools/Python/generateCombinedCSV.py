@@ -25,18 +25,7 @@ def main():
     combined = []
 
     def merge_rows(insert_row, select_row):
-        # 1) no multiple selects and no multiple lens => ex.: int_queries_select => int_queries
-        # 2) multiple selects but no multiple lens => ex.: query_differences_select_column_prefix => column_prefix
-        # 3) multiple lens but no multiple selects => ex.: with_index_length_500_select => with_index_length_500
-        # 4) multiple selects and multiple lens => ex.: null_2_select_default_null_count_null => default_null_count_null_2
-        match = re.search(r"(.*?)_comb_(.*?)(?=_select).*?select_?(.*)", select_row['Script'])
-        if match:
-            group1, group2, group3 = match.groups()
-            script_name = f"{group3}_{group2}" if group3 else f"{group1}_{group2}"
-        else:
-            script_name = re.sub(r'^.*?_select_|_select', '', select_row['Script'])
-
-        merged = {'Script': script_name}
+        merged = {'Script': select_row['Script']}
 
         for column in headers:
             if column != 'Script' and column != 'Base_Script':
@@ -61,11 +50,12 @@ def main():
         matching_selects = select_rows[select_rows['Base_Script'] == base_script]
 
         if "Time (s)" in headers:
+            max_time= df.groupby('Script')['Time (s)'].max().min()
             grouped_selects = matching_selects.groupby("Script")
             for script, group in grouped_selects:
                 for _, insert_row in insert_data.iterrows():
                     matching_rows = group[group['Time (s)'] == insert_row['Time (s)']]
-                    if not matching_rows.empty:
+                    if not matching_rows.empty and insert_row['Time (s)'] <= max_time:
                         for _, select_row in matching_rows.iterrows():
                             combined.append(merge_rows(insert_row, select_row))
         else:
