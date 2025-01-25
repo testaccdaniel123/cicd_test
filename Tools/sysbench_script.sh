@@ -3,7 +3,7 @@ which bash
 if [ -n "$GITHUB_ACTIONS" ]; then
     ABS_PATH="."
 else
-    ABS_PATH="/Users/danielmendes/Desktop/Bachelorarbeit/Repo"
+    ABS_PATH="YOUR_PATH_TO_PROJECT"
 fi
 PYTHON_PATH="${ABS_PATH}/Tools/Python"
 
