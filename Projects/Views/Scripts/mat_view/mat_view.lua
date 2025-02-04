@@ -22,7 +22,7 @@ function prepare()
            ARTIKEL_ID   INT,
            UMSATZ       INT,
            FK_KUNDEN    INT NOT NULL,
-           FOREIGN KEY (FK_KUNDEN) REFERENCES KUNDEN (KUNDEN_ID)
+           FOREIGN KEY (FK_KUNDEN) REFERENCES KUNDEN (KUNDEN_ID) ON DELETE CASCADE
        );
     ]]
 
