@@ -21,56 +21,27 @@ cd ../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Views/Output" \
-  -var '{"length":[1000],"refresh":["every","once"]}' \
   -scripts '{
-   "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/virtual_view": {
-      "vars": "length"
-    },
-    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger": {
-      "vars": "length"
-    },
-    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger_postgres": {
-      "vars": "length",
-      "db": "postgres"
-    },
-    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/mat_view": {
-      "vars": "length,refresh",
-      "db": "postgres"
-    }
+   "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/without_view": {},
+    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/virtual_view": {},
+    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger": {}
   }'
 ```
 
-### View - Vergleich ohne Mat-View:
+### Code mit Materialized View-Vergleich:
 ```bash
 cd ../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Views/Output" \
-  -var '{"length":[1000]}' \
+  -var '{"refresh":["every","once"]}' \
   -scripts '{
-   "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/virtual_view": {
-      "vars": "length"
-    },
-    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger": {
-      "vars": "length"
-    },
+    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger": {},
     "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger_postgres": {
-      "vars": "length",
       "db": "postgres"
-    }
-  }'
-```
-
-### Only Mat-View in Postgres:
-```bash
-cd ../..
-cd Tools  
-./sysbench_script.sh \
-  -out "YOUR_PATH_TO_PROJECT/Projects/Views/Output" \
-  -var '{"length":[1000],"refresh":["every","once"]}' \
-  -scripts '{
+    },
     "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/mat_view": {
-      "vars": "length,refresh",
+      "vars": "refresh",
       "db": "postgres"
     }
   }'
