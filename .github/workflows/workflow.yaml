@@ -1,13 +1,6 @@
 name: Benchmark
 
 on:
-  push:
-    paths:
-      - 'Projects/**'
-      - '.github/workflows/**'
-      - '.github/pattern.json'
-      - 'Tools/Python/**'
-      - 'Tools/sysbench_script.sh'
   workflow_dispatch:
 
 jobs:

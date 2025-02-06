@@ -1,0 +1,91 @@
+name: MySQL Replication Setup
+
+on:
+  push:
+    paths:
+      - 'Projects/**'
+      - '.github/workflows/**'
+      - '.github/pattern.json'
+      - 'Tools/Python/**'
+      - 'Tools/sysbench_script.sh'
+  workflow_dispatch:
+
+jobs:
+  setup-mysql-replication:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Docker Network
+        run: docker network create mysql-network
+
+      - name: Start MySQL Primary
+        run: |
+          docker run -d \
+            --name mysql-primary \
+            --network mysql-network \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -p 3306:3306 \
+            mysql:8 \
+            --server-id=1 --log-bin=mysql-bin
+          until docker exec mysql-primary mysqladmin ping -uroot -proot --silent &> /dev/null; do
+            echo "Waiting for MySQL Primary to be ready..."
+            sleep 5
+          done
+      - name: Start MySQL Replica
+        run: |
+          docker run -d \
+            --name mysql-replica \
+            --network mysql-network \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -p 3307:3306 \
+            mysql:8 \
+            --server-id=2 --log-bin=mysql-bin --read-only=1
+          until docker exec mysql-replica mysqladmin ping -uroot -proot --silent &> /dev/null; do
+            echo "Waiting for MySQL Replica to be ready..."
+            sleep 5
+          done
+      - name: Set up Primary MySQL
+        run: |
+          docker exec mysql-primary mysql -uroot -proot -e "
+          CREATE USER IF NOT EXISTS 'replica'@'%' IDENTIFIED BY 'password';
+          GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
+          FLUSH PRIVILEGES;
+          FLUSH TABLES WITH READ LOCK;
+          SHOW BINARY LOG STATUS;
+          "
+      - name: Capture Master Status
+        run: |
+          MASTER_STATUS=$(docker exec mysql-primary mysql -uroot -proot -e "SHOW BINARY LOG STATUS\G")
+          echo "LOG_FILE=$(echo "$MASTER_STATUS" | awk '/File:/ {print $2}')" >> $GITHUB_ENV
+          echo "LOG_POS=$(echo "$MASTER_STATUS" | awk '/Position:/ {print $2}')" >> $GITHUB_ENV
+      - name: Set up Replica MySQL
+        run: |
+          docker exec mysql-replica mysql -uroot -proot -h mysql-primary -e "
+          CHANGE REPLICATION SOURCE TO
+            SOURCE_HOST = 'mysql-primary',
+            SOURCE_USER = 'replica',
+            SOURCE_PASSWORD = 'password',
+            SOURCE_LOG_FILE = '${LOG_FILE}',
+            SOURCE_LOG_POS = ${LOG_POS};
+          START REPLICA;
+          SHOW REPLICA STATUS\G;
+          "
+      - name: Unlock Tables and Insert Data into Master
+        run: |
+          docker exec mysql-primary mysql -uroot -proot -e "
+          UNLOCK TABLES;
+          CREATE DATABASE IF NOT EXISTS test;
+          USE test;
+          CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY, name VARCHAR(50));
+          INSERT INTO users VALUES (1, 'Alice');
+          "
+      - name: Verify Data in Replica
+        run: |
+          RESULT=$(docker exec mysql-replica mysql -uroot -proot -h mysql-primary -e "
+          USE test;
+          SELECT * FROM users;
+          ")
+          echo "Query Result: $RESULT"

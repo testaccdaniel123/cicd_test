@@ -1,0 +1,17 @@
+version: '3'
+services:
+  mysql-primary:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    command: --server-id=1 --log-bin=mysql-bin
+
+  mysql-replica:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    command: --server-id=2 --log-bin=mysql-bin --read-only=1
