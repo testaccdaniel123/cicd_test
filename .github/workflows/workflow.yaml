@@ -1,6 +1,13 @@
 name: Benchmark
 
 on:
+  push:
+    paths:
+      - 'Projects/**'
+      - '.github/workflows/**'
+      - '.github/pattern.json'
+      - 'Tools/Python/**'
+      - 'Tools/sysbench_script.sh'
   workflow_dispatch:
 
 jobs:
@@ -41,8 +48,8 @@ jobs:
           
             ARTIFACT_NAME="${TEST_TYPE}-${HASH}-${GENERAL_HASH}"
             SHOULD_RUN=$(echo "$ALL_ARTIFACTS" | jq -e --arg name "$ARTIFACT_NAME" '.artifacts[] | select(.name == $name) | .id' > /dev/null && echo false || echo true)
-            ENVS=$(jq -r --arg test "$TEST_TYPE" '.[$test].scripts | to_entries | map(if .value.db then .value.db else "mysql" end) | unique | join(",")' "$CONFIG_FILE")
-          
+            ENVS=$(jq -r --arg test "$TEST_TYPE" '.[$test].scripts | to_entries | map(if .value.db then .value.db[] else "mysql" end) | unique | join(",")' "$CONFIG_FILE")
+  
             # Creation of the JSON result
             RESULT=$(jq -n \
             --arg test_type "$TEST_TYPE" \
