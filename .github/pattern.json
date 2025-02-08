@@ -109,7 +109,7 @@
   "replication": {
     "scripts": {
       "./Projects/Replication/Scripts/int_queries": {
-        "db": ["postgres","mysql"]
+        "db": ["mysql_master_slave","mysql"]
       }
     }
   }

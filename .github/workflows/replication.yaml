@@ -1,96 +1,45 @@
-name: MySQL Replication Setup
+name: MySQL Replication Test
 
 on:
+  push:
+    paths:
+      - '.github/workflows/replication.yaml'
   workflow_dispatch:
 
 jobs:
-  setup-mysql-replication:
+  run-setup:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Create Docker Network
-        run: docker network create mysql-network
-
-      - name: Start MySQL Primary
+      - name: Install dependencies
         run: |
-          docker run -d \
-            --name mysql-primary \
-            --network mysql-network \
-            -e MYSQL_ROOT_PASSWORD=root \
-            -p 3306:3306 \
-            mysql:8 \
-            --server-id=1 --log-bin=mysql-bin
-          until docker exec mysql-primary mysqladmin ping -uroot -proot --silent &> /dev/null; do
-            echo "Waiting for MySQL Primary to be ready..."
-            sleep 5
-          done
+          sudo apt-get update
+          sudo apt-get install -y sysbench
+          python -m pip install --upgrade pip
+          pip install pandas matplotlib
 
-      - name: Start MySQL Replicas
+      - name: Start MySQL Replication container
         run: |
-          for i in {1..3}; do
-            docker run -d \
-              --name mysql-replica-${i} \
-              --network mysql-network \
-              -e MYSQL_ROOT_PASSWORD=root \
-              -p $((3306 + i)):3306 \
-              mysql:8 \
-              --server-id=$((i + 1)) --log-bin=mysql-bin --read-only=1
-            until docker exec mysql-replica-${i} mysqladmin ping -uroot -proot --silent &> /dev/null; do
-              echo "Waiting for MySQL Replica ${i} to be ready..."
-              sleep 5
-            done
-          done
+          chmod +x .github/scripts/setup.sh
+          .github/scripts/setup.sh
 
-      - name: Set up Primary MySQL
+      - name: Run sysbench script
         run: |
-          docker exec mysql-primary mysql -uroot -proot -e "
-          CREATE USER IF NOT EXISTS 'replica'@'%' IDENTIFIED BY 'password';
-          GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
-          FLUSH PRIVILEGES;
-          FLUSH TABLES WITH READ LOCK;
-          SHOW BINARY LOG STATUS;
-          "
+          chmod +x Tools/sysbench_script.sh
+          
+          Tools/sysbench_script.sh \
+          -out "./Projects/Replication/Output" \
+          -scripts '{
+           "./Projects/Replication/Scripts/int_queries": {
+             "db": ["mysql_master_slave"]
+           }
+          }'
 
-      - name: Capture Master Status
-        run: |
-          MASTER_STATUS=$(docker exec mysql-primary mysql -uroot -proot -e "SHOW BINARY LOG STATUS\G")
-          echo "LOG_FILE=$(echo "$MASTER_STATUS" | awk '/File:/ {print $2}')" >> $GITHUB_ENV
-          echo "LOG_POS=$(echo "$MASTER_STATUS" | awk '/Position:/ {print $2}')" >> $GITHUB_ENV
-
-      - name: Set up MySQL Replicas
-        run: |
-          for i in {1..3}; do
-            docker exec mysql-replica-${i} mysql -uroot -proot -h mysql-primary -e "
-            STOP REPLICA IO_THREAD;
-            CHANGE REPLICATION SOURCE TO
-              SOURCE_HOST = 'mysql-primary',
-              SOURCE_USER = 'replica',
-              SOURCE_PASSWORD = 'password',
-              SOURCE_LOG_FILE = '${LOG_FILE}',
-              SOURCE_LOG_POS = ${LOG_POS};
-            START REPLICA;
-            SHOW REPLICA STATUS\G;
-            "
-          done
-
-      - name: Unlock Tables and Insert Data into Master
-        run: |
-          docker exec mysql-primary mysql -uroot -proot -e "
-          UNLOCK TABLES;
-          CREATE DATABASE IF NOT EXISTS sbtest;
-          USE sbtest;
-          CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY, name VARCHAR(50));
-          "
-
-      - name: Verify Data in Replicas
-        run: |
-          for i in {1..3}; do
-            RESULT=$(docker exec mysql-replica-${i} mysql -uroot -proot -h mysql-primary -e "
-            USE sbtest;
-            SELECT * FROM users;
-            ")
-            echo "Query Result in Replica ${i}: $RESULT"
-          done
+      - name: Upload test outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: "daniel-test-123"
+          path: "./Projects/Replication/Output"
