@@ -1,4 +1,4 @@
-# Performance von Replikation (WIP)
+# Performance von Replikation
 ## Beschreibung
 
 ## Datenbankstruktur
@@ -23,7 +23,7 @@ cd Tools
   -out "YOUR_PATH_TO_PROJECT/Projects/Replication/Output" \
   -scripts '{
     "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/int_queries": {
-      "db": ["mysql","mysql_master_slave","postgres"]
+      "db": ["mysql_master_slave","mysql"]
     }
   }'
 ```
