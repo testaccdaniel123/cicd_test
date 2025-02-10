@@ -1,9 +1,6 @@
 name: MySQL Replication Test
 
 on:
-  push:
-    paths:
-      - '.github/workflows/replication.yaml'
   workflow_dispatch:
 
 jobs:
