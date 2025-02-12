@@ -106,11 +106,20 @@
     },
     "var": {"refresh":["every","once"]}
   },
-  "replication": {
+  "replication-vs-no": {
     "scripts": {
       "./Projects/Replication/Scripts/int_queries": {
         "db": ["mysql_master_slave","mysql"]
       }
     }
+  },
+  "replication": {
+    "scripts": {
+      "./Projects/Replication/Scripts/int_queries": {
+        "vars": "format",
+        "db": ["mysql_master_slave"]
+      }
+    },
+    "var": {"format":["statement","row","mixed"]}
   }
 }
