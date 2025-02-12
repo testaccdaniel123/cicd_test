@@ -37,7 +37,7 @@ cd Tools
   -var '{"refresh":["every","once"]}' \
   -scripts '{
     "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger": {},
-    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger_postgres": {
+    "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/with_trigger_pg": {
       "db": ["postgres"]
     },
     "YOUR_PATH_TO_PROJECT/Projects/Views/Scripts/mat_view": {
