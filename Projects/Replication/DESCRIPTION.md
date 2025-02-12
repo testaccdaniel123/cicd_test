@@ -19,9 +19,9 @@ Führe das folgende Script aus, um die Benchmarks mit den korrekten Pfaden und P
 cd ../..
 cd Tools
 ./sysbench_script.sh \
-  -out "/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Projects/Replication/Output" \
+  -out "YOUR_PATH_TO_PROJECT/Projects/Replication/Output" \
   -scripts '{
-    "/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Projects/Replication/Scripts/int_queries": {
+    "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/int_queries": {
       "db": ["mysql_master_slave","mysql"]
     }
   }'
@@ -32,10 +32,10 @@ cd Tools
 cd ../..
 cd Tools
 ./sysbench_script.sh \
-  -out "/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Projects/Replication/Output" \
+  -out "YOUR_PATH_TO_PROJECT/Projects/Replication/Output" \
   -var '{"format":["statement","row","mixed"]}' \
   -scripts '{
-    "/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Projects/Replication/Scripts/int_queries": {
+    "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/int_queries": {
       "vars": "format",
       "db": ["mysql_master_slave_less_replicas"]
     }
@@ -46,5 +46,5 @@ cd Tools
 cd ../..
 cd Tools
 ./generate_graph.sh \
-  /Users/danielmendes/Desktop/Bachelorarbeit/Repo/Projects/Replication/Output
+  YOUR_PATH_TO_PROJECT/Projects/Replication/Output
 ```

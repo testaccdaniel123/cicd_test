@@ -268,7 +268,7 @@ generate_combinations() {
 DBMS_SET=()
 for SCRIPT_PATH in $SCRIPT_KEYS; do
   for db in $(jq -r --arg key "$SCRIPT_PATH" '.[$key].db // ["mysql"] | .[]' <<< "$SCRIPTS"); do
-    [[ " ${DBMS_SET[*]} " =~  $db  ]] || DBMS_SET+=("$db")
+    [[ ! " ${DBMS_SET[*]} " =~ (^|[[:space:]])$db($|[[:space:]]) ]] && DBMS_SET+=("$db")
   done
 done
 DBMS_COUNT=${#DBMS_SET[@]}
@@ -278,7 +278,7 @@ for SCRIPT_PATH in $SCRIPT_KEYS; do
   DBMS=$(echo "$SCRIPTS" | jq -r --arg key "$SCRIPT_PATH" '.[$key].db // ["mysql"]')
   for DB in $(echo "$DBMS" | jq -r '.[]'); do
     prepare_variables "$SCRIPT_PATH" "$DB"
-    DB_INFO="$( [ "$DB" != "mysql" ] || [ "$DBMS_COUNT" -ne 1 ] && echo "${DB}" )"
+    DB_INFO="$( [ "$DBMS_COUNT" -ne 1 ] && echo "${DB}" )"
     if [[ -n "$EXPORTED_VARS" ]]; then
         IFS=',' read -r -a KEYS <<< "$EXPORTED_VARS"
 

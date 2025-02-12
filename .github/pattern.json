@@ -96,7 +96,7 @@
   "mat-view-comparison": {
     "scripts": {
       "./Projects/Views/Scripts/with_trigger": {},
-      "./Projects/Views/Scripts/with_trigger_postgres": {
+      "./Projects/Views/Scripts/with_trigger_pg": {
         "db": ["postgres"]
       },
       "./Projects/Views/Scripts/mat_view": {
