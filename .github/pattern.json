@@ -113,11 +113,11 @@
       }
     }
   },
-  "replication": {
+  "replication-format-change": {
     "scripts": {
       "./Projects/Replication/Scripts/int_queries": {
         "vars": "format",
-        "db": ["mysql_master_slave"]
+        "db": ["mysql_master_slave_less_replicas"]
       }
     },
     "var": {"format":["statement","row","mixed"]}
