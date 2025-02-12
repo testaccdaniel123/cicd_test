@@ -37,7 +37,7 @@ cd Tools
   -scripts '{
     "/Users/danielmendes/Desktop/Bachelorarbeit/Repo/Projects/Replication/Scripts/int_queries": {
       "vars": "format",
-      "db": ["mysql_master_slave"]
+      "db": ["mysql_master_slave_less_replicas"]
     }
   }'
 ```
