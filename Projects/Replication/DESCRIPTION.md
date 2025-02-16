@@ -21,7 +21,7 @@ cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Replication/Output" \
   -scripts '{
-    "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/int_queries": {
+    "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/replication": {
       "db": ["mysql_master_slave","mysql"]
     }
   }'
@@ -35,7 +35,7 @@ cd Tools
   -out "YOUR_PATH_TO_PROJECT/Projects/Replication/Output" \
   -var '{"format":["statement","row","mixed"]}' \
   -scripts '{
-    "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/int_queries": {
+    "YOUR_PATH_TO_PROJECT/Projects/Replication/Scripts/replication": {
       "vars": "format",
       "db": ["mysql_master_slave_less_replicas"]
     }
