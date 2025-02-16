@@ -108,18 +108,42 @@
   },
   "replication-vs-no": {
     "scripts": {
-      "./Projects/Replication/Scripts/int_queries": {
+      "./Projects/Replication/Scripts/replication": {
         "db": ["mysql_master_slave","mysql"]
       }
     }
   },
   "replication-format-change": {
     "scripts": {
-      "./Projects/Replication/Scripts/int_queries": {
+      "./Projects/Replication/Scripts/replication": {
         "vars": "format",
         "db": ["mysql_master_slave_less_replicas"]
       }
     },
     "var": {"format":["statement","row","mixed"]}
+  },
+  "range-partition": {
+    "scripts": {
+      "./Projects/Partition/Scripts/without_partitioning": {
+        "selects": ["without_range_pruning"]
+      },
+      "./Projects/Partition/Scripts/range_partitioning": {}
+    }
+  },
+  "hash-partition": {
+    "scripts": {
+      "./Projects/Partition/Scripts/without_partitioning": {
+        "selects": ["without_hash_pruning","without_hash_pruning_range"]
+      },
+      "./Projects/Partition/Scripts/hash_partitioning": {}
+    }
+  },
+  "list-partition": {
+    "scripts": {
+      "./Projects/Partition/Scripts/without_partitioning": {
+        "selects": ["without_list_pruning_simple","without_list_pruning_multiple"]
+      },
+      "./Projects/Partition/Scripts/list_partitioning": {}
+    }
   }
 }
