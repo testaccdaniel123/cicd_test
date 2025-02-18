@@ -20,11 +20,10 @@ function select_in_multiple_countries()
     local in_multiple_countries_query = string.format([[
         SELECT *
         FROM KUNDEN k
-        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN
+        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN AND k.LAND = b.LAND
         WHERE k.LAND IN (%s);
     ]], table.concat(where_clause, ", "))
 
-    print("Executing query for these random countries: ", table.concat(test_countries, ", "))
     con:query(in_multiple_countries_query)
 end
 

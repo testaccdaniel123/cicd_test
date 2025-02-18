@@ -13,7 +13,7 @@ function query_for_country(country)
     return string.format([[
         SELECT *
         FROM KUNDEN k
-        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN
+        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN AND k.LAND = b.LAND
         WHERE k.LAND = '%s'
     ]], country)
 end
@@ -27,7 +27,6 @@ function select_union_multiple_countries()
     end
 
     local union_multiple_countries_query = table.concat(query_parts, " UNION ")
-    print("Executing query for countries: " .. table.concat(countries, ", "))
     con:query(union_multiple_countries_query)
 end
 

@@ -21,11 +21,10 @@ function select_or_multiple_countries()
     local or_multiple_countries_query = string.format([[
         SELECT *
         FROM KUNDEN k
-        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN
+        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN AND k.LAND = b.LAND
         WHERE %s;
     ]], table.concat(where_clause, " OR "))
 
-    print("Executing query for these random countries: ", table.concat(test_countries, ", "))
     con:query(or_multiple_countries_query)
 end
 

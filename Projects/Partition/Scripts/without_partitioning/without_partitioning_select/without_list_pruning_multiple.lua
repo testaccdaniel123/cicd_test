@@ -24,7 +24,7 @@ function select_without_list_pruning_multiple()
         WHERE k.LAND IN (%s);
     ]], table.concat(where_clause, ", "))
 
-    print("Executing query for these random countries: ", table.concat(test_countries, ", "))
+    print("daniel",without_list_pruning_multiple_query)
     con:query(without_list_pruning_multiple_query)
 end
 

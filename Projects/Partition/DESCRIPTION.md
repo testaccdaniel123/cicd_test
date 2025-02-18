@@ -22,7 +22,7 @@ cd Tools
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
   -scripts '{
     "YOUR_PATH_TO_PROJECT/Projects/Partition/Scripts/without_partitioning": {
-      "selects": ["without_range_pruning"]
+      "selects": ["without_range_failing_pruning","without_range_primary_key"]
     },
     "YOUR_PATH_TO_PROJECT/Projects/Partition/Scripts/range_partitioning": {}
   }'
