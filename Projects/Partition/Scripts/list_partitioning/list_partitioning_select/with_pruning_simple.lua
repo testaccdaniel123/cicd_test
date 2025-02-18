@@ -4,7 +4,7 @@ function select_with_pruning_simple()
     local with_pruning_simple_query = [[
         SELECT *
         FROM KUNDEN k
-        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN
+        JOIN BESTELLUNG b ON k.KUNDEN_ID = b.FK_KUNDEN AND k.LAND = b.LAND
         WHERE k.LAND = 'Germany';
     ]];
     con:query(with_pruning_simple_query)
