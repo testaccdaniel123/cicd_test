@@ -10,17 +10,25 @@ function utils.randomString(length)
     return result
 end
 
-function utils.print_results(result)
+function utils.print_results(con, query)
+    result = con:query(query)
+    io.stderr:write("----------------------"  .. " START PRINTING " .. "----------------------" .. "\n")
+    io.stderr:write("Executed Query: "  .. query:gsub("%s+", " ") .. "\n")
+
     if result and result.nrows > 0 then
         for i = 1, result.nrows do
             local row = result:fetch_row()
             local output_string = ""
             for j = 1, #row do
-                output_string = output_string .. tostring(row[j]) .. " "
+                output_string = output_string .. tostring(row[j])
+                if j < #row then
+                    output_string = output_string .. ";"
+                end
             end
             io.stderr:write(output_string .. "\n")
         end
     end
+    io.stderr:write("----------------------"  .. "  END PRINTING  " .. "----------------------" .. "\n" .. "\n")
 end
 
 function utils.generate_partition_definition_by_year(start_year, end_year, step)

@@ -1,8 +1,9 @@
 local con = sysbench.sql.driver():connect()
+local count = tonumber(os.getenv("PARTITIONS_SIZE")) or 5
 
 function prepare()
      -- SQL query to create the KUNDEN table without range partition
-     local create_kunden_query = [[
+     local create_kunden_query = string.format([[
         CREATE TABLE KUNDEN (
             KUNDEN_ID     INT,
             NAME          VARCHAR(255),
@@ -16,9 +17,8 @@ function prepare()
             PRIMARY KEY (KUNDEN_ID)
         )
         PARTITION BY HASH(KUNDEN_ID)
-        PARTITIONS 4;
-    ]]
-
+        PARTITIONS %s;
+    ]], count)
 
     -- SQL query to create the BESTELLUNG table
     local create_bestellung_query = [[

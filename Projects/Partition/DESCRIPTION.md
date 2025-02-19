@@ -28,17 +28,20 @@ cd Tools
   }'
 ```
 
-### Code für Hash-Partitionierung:
+### Code für Hash-Partitionierung mit Range:
 ```bash
 cd ../..
 cd Tools
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
+  -var '{"partitions_size":[5,50,500]}' \
   -scripts '{
     "YOUR_PATH_TO_PROJECT/Projects/Partition/Scripts/without_partitioning": {
-      "selects": ["without_hash_pruning","without_hash_pruning_range"]
+      "selects": ["without_hash_pruning_range"]
     },
-    "YOUR_PATH_TO_PROJECT/Projects/Partition/Scripts/hash_partitioning": {}
+    "YOUR_PATH_TO_PROJECT/Projects/Partition/Scripts/hash_partitioning": {
+      "vars": "partitions_size"
+    }
   }'
 ```
 
