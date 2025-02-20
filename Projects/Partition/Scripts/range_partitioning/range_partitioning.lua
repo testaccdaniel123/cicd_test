@@ -1,9 +1,10 @@
 local con = sysbench.sql.driver():connect()
 package.path = package.path .. ";" .. debug.getinfo(1).source:match("@(.*)"):match("(.*/)") .. "../../../../Tools/Lua/?.lua"
 local utils = require("utils")
+local use_range_columns = (os.getenv("TYPE") or "") == "range_columns"
 
 function prepare()
-     local partition_sql = utils.generate_partition_definition_by_year(1950, 2020, 5)
+     local partition_sql = utils.generate_partition_definition_by_year(1950, 2020, 5, use_range_columns)
      -- SQL query to create the KUNDEN table with range partition
      local create_kunden_query = string.format([[
          CREATE TABLE KUNDEN (

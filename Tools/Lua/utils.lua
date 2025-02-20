@@ -31,18 +31,22 @@ function utils.print_results(con, query)
     io.stderr:write("----------------------"  .. "  END PRINTING  " .. "----------------------" .. "\n" .. "\n")
 end
 
-function utils.generate_partition_definition_by_year(start_year, end_year, step)
+function utils.generate_partition_definition_by_year(start_year, end_year, step, use_range_columns)
     local partitions = {}
     local partition_number = 1
     for year = start_year, end_year, step do
         local next_year = year + step
-        table.insert(partitions, string.format(
-            "PARTITION p%d VALUES LESS THAN (%d)", partition_number, next_year
-        ))
+        local partition_def = use_range_columns
+            and string.format("PARTITION p%d VALUES LESS THAN ('%d-01-01')", partition_number, next_year)
+            or string.format("PARTITION p%d VALUES LESS THAN (%d)", partition_number, next_year)
+        table.insert(partitions, partition_def)
         partition_number = partition_number + 1
     end
-    table.insert(partitions, "PARTITION pmax VALUES LESS THAN MAXVALUE")
-    return "PARTITION BY RANGE (YEAR(GEBURTSTAG)) (\n    " .. table.concat(partitions, ",\n    ") .. "\n);"
+    table.insert(partitions, "PARTITION pmax VALUES LESS THAN (MAXVALUE)")
+
+    local partition_type = use_range_columns and "RANGE COLUMNS(GEBURTSTAG)" or "RANGE (YEAR(GEBURTSTAG))"
+
+    return "PARTITION BY " .. partition_type .. " (\n    " .. table.concat(partitions, ",\n    ") .. "\n);"
 end
 
 function utils.generate_list_partitions(countries)
