@@ -130,6 +130,15 @@
       "./Projects/Partition/Scripts/range_partitioning": {}
     }
   },
+  "range-partition-comb": {
+    "scripts": {
+      "./Projects/Partition/Scripts/range_partitioning": {
+        "vars": "type",
+        "selects": ["with_primary_key","with_pruning"]
+      }
+    },
+    "var": {"type":["range_columns","only_range"]}
+  },
   "hash-partition": {
     "scripts": {
       "./Projects/Partition/Scripts/without_partitioning": {

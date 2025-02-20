@@ -28,6 +28,21 @@ cd Tools
   }'
 ```
 
+### Code für Range-Partitionierung-Vergleich zwischen RANGE COLUMNS and only RANGE:
+```bash
+cd ../..
+cd Tools
+./sysbench_script.sh \
+  -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
+  -var '{"type":["range_columns","only_range"]}' \
+  -scripts '{
+    "YOUR_PATH_TO_PROJECT/Projects/Partition/Scripts/range_partitioning": {
+      "vars": "type",
+      "selects": ["with_primary_key","with_pruning"]
+    }
+  }'
+```
+
 ### Code für Hash-Partitionierung mit Range:
 ```bash
 cd ../..
