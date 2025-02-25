@@ -38,7 +38,7 @@ function prepare()
 
     con:query(create_kunden_query)
     con:query(create_bestellung_query)
-    print("Tables KUNDEN and BESTELLUNG have been successfully created.")
+    print("Tables KUNDEN and BESTELLUNG trigger been successfully created.")
 end
 
 function cleanup()
