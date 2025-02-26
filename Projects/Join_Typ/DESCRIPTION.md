@@ -58,7 +58,7 @@ Führe das folgende Script aus, um die Benchmarks mit den korrekten Pfaden und P
 
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Output" \
   -var '{"length":[1, 64]}' \
@@ -72,7 +72,7 @@ cd Tools
 
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./generate_graph.sh \
   YOUR_PATH_TO_PROJECT/Projects/Join_Typ/Output
 ```
