@@ -1,5 +1,5 @@
 local con = sysbench.sql.driver():connect()
-package.path = package.path .. ";" .. debug.getinfo(1).source:match("@(.*)"):match("(.*/)") .. "../../../../../../Tools/Lua/?.lua"
+package.path = package.path .. ";" .. debug.getinfo(1).source:match("@(.*)"):match("(.*/)") .. "../../../../../Tools/Lua/?.lua"
 local utils = require("utils")
 local explain_executed = false
 

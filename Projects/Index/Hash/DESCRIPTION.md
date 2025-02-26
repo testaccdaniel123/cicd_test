@@ -40,6 +40,20 @@ cd Tools/Shell-Scripts
   }'
 ```
 
+### Code unterschiedliche Select - Queries ohne Index (zum Vergleich)
+```bash
+cd ../../..
+cd Tools/Shell-Scripts
+./sysbench_script.sh \
+  -out "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Output" \
+  -var '{"no":["index"]}' \
+  -scripts '{
+    "YOUR_PATH_TO_PROJECT/Projects/Index/Hash/Scripts/query_differences": {
+      "vars": "no"
+    }
+  }'
+```
+
 ### Nur Graphen erstellen für Select - Queries (log und csv- files müssen schon bestehen)
 ```bash
 cd ../../..
