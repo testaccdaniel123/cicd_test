@@ -43,10 +43,10 @@ jobs:
       matrix:
         test-type: ${{ fromJson(needs.prepare-benchmark.outputs.matrix) }}
     env:
-      TIME: 8
+      TIME: 90
       THREADS: 1
       EVENTS: 0
-      REPORT_INTERVAL: 1
+      REPORT_INTERVAL: 3
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
