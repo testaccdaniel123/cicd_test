@@ -7,7 +7,7 @@ function select_desc_sort()
     desc_sort_query = "SELECT * FROM KUNDEN ORDER BY KUNDEN_ID DESC;";
 
     if not explain_executed then
-        utils.print_results(con, desc_sort_query:gsub("%*", "COUNT(*)"))
+        utils.print_results(con, (desc_sort_query:gsub("%*", "COUNT(*)")))
         explain_executed = true
     end
 

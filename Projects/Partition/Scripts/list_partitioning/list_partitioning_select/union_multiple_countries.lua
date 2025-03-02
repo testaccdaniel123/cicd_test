@@ -31,7 +31,7 @@ function select_union_multiple_countries()
 
     if not explain_executed then
         utils.print_results(con, "EXPLAIN " .. union_multiple_countries_query)
-        utils.print_results(con, union_multiple_countries_query:gsub("%*", "COUNT(*)"))
+        utils.print_results(con, (union_multiple_countries_query:gsub("%*", "COUNT(*)")))
         explain_executed = true
     end
 

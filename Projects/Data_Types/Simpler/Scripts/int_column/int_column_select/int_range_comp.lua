@@ -7,7 +7,7 @@ function select_range_comp()
     range_comp_query = "SELECT * FROM KUNDEN WHERE KUNDEN_ID > 1234;"
 
     if not explain_executed then
-        utils.print_results(con, range_comp_query:gsub("%*", "COUNT(*)"))
+        utils.print_results(con, (range_comp_query:gsub("%*", "COUNT(*)")))
         explain_executed = true
     end
 

@@ -7,7 +7,7 @@ function select_query()
     local query = "SELECT * FROM KUNDEN WHERE NAME = 'Kunde_1';"
     if not explain_executed then
         utils.print_results(con, "EXPLAIN " .. query)
-        utils.print_results(con, query:gsub("%*", "COUNT(*)"))
+        utils.print_results(con, (query:gsub("%*", "COUNT(*)")))
         explain_executed = true
     else
         con:query(query)

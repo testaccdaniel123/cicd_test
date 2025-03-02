@@ -96,7 +96,7 @@ process_script_benchmark() {
       local SCRIPT_NAME
       BASE_NAME=$(basename "$SCRIPT" .lua)
       DB_SUFFIX=$( [ -n "$DB_INFO" ] && echo "_db_${DB_INFO}" )
-      IS_SELECT=$([[ "$SCRIPT" == "$SELECT_SCRIPT"/* ]] && echo true || echo false)
+      IS_SELECT=$([[ "$SCRIPT" == "$INSERT_SCRIPT" ]] && echo false  || echo true)
       if [ -n "$COMBINATION" ]; then
         COMB_SUFFIX="_comb_${COMBINATION}"
         if $IS_FROM_SELECT_DIR && $IS_SELECT; then
