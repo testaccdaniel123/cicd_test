@@ -317,6 +317,9 @@ for SCRIPT_PATH in $SCRIPT_KEYS; do
   done
 done
 
+# Extracting the count value from logs
+${ABS_PATH}/Tools/Shell-Scripts/extract_count_from_logs.sh "$OUTPUT_DIR"
+
 # Statistics csv generated
 python3 "$PYTHON_PATH/generateCombinedCSV.py" "$STATISTICS_FILE_TEMP" "$STATISTICS_FILE" --select_columns "$STATS_SELECT_COLUMNS" --insert_columns "$STATS_INSERT_COLUMNS" --prefixes "$PREFIXES"
 echo "Combined CSV file created at $STATISTICS_FILE"

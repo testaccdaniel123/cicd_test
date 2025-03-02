@@ -9,8 +9,9 @@ function select_query()
         utils.print_results(con, "EXPLAIN " .. query)
         utils.print_results(con, query:gsub("%*", "COUNT(*)"))
         explain_executed = true
+    else
+        con:query(query)
     end
-    con:query(query)
 end
 
 function event()
