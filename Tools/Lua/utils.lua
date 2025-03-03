@@ -23,7 +23,6 @@ function unlock_file(file)
     return result == 0
 end
 
-
 local function is_line_in_file(file_name, line)
     local file = io.open(file_name, "r")
     if not file then
@@ -56,9 +55,10 @@ function utils.print_results(con, query, custom)
         end
 
         if result and result.nrows > 0 then
+            local is_count_query = string.find(query, "COUNT%(%*%)") ~= nil
             for i = 1, result.nrows do
                 local row = result:fetch_row()
-                local output_string = ""
+                local output_string = is_count_query and "COUNT:" or "ROW" .. i .. ":"
                 for j = 1, #row do
                     output_string = output_string .. tostring(row[j])
                     if j < #row then
