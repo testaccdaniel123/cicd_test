@@ -20,9 +20,13 @@ find "$log_folder" -type f -name "*.log" | while read -r file; do
           if [[ "$custom_name_line" == CUSTOM_NAME:* ]]; then
               query_name=$(echo "$custom_name_line" | sed 's/CUSTOM_NAME://g' | tr '[:upper:]' '[:lower:]' | xargs)
               read -r count_value
-              echo "${filename}_${query_name},${count_value}" >> "$temp_file"
+              combined_value="${filename}_${query_name},${count_value}"
           else
-              echo "$filename,$custom_name_line" >> "$temp_file"
+              combined_value="$filename,$custom_name_line"
+          fi
+          IFS=',' read -r query_name count_value <<< "$combined_value"
+          if [[ "$count_value" =~ ^[0-9]+$ ]] && ! awk -F, -v k="$query_name" '$1 == k {found=1; exit} END {exit !found}' "$temp_file"; then
+              echo "$query_name,$count_value" >> "$temp_file"
           fi
         fi
       done < "$file"

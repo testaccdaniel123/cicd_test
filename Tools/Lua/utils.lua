@@ -10,6 +10,20 @@ function utils.randomString(length)
     return result
 end
 
+function lock_file(file)
+    local lock_file = file:gsub("%.log$", "") .. ".lock"
+    local command = string.format("touch %s", lock_file)
+    local result = os.execute(command)
+    return result == 0
+end
+
+function unlock_file(file)
+    local lock_file = file:gsub("%.log$", "") .. ".lock"
+    local result = os.remove(lock_file)
+    return result == 0
+end
+
+
 local function is_line_in_file(file_name, line)
     local file = io.open(file_name, "r")
     if not file then
@@ -32,7 +46,7 @@ function utils.print_results(con, query, custom)
     local log_file = os.getenv("LOG_FILE")
     local query_line = "Executed Query: " .. query:gsub("%s+", " ")
 
-    if log_file and not is_line_in_file(log_file, query_line) then
+    if lock_file(log_file) and log_file and not is_line_in_file(log_file, query_line) then
         local result = con:query(query)
         io.stderr:write("---------------------- START PRINTING ----------------------\n")
         io.stderr:write(query_line .. "\n")
@@ -56,6 +70,7 @@ function utils.print_results(con, query, custom)
         end
         io.stderr:write("----------------------  END PRINTING  ----------------------\n\n")
     end
+    unlock_file(log_file)
 end
 
 function utils.generate_partition_definition_by_year(start_year, end_year, step, use_range_columns)
