@@ -7,15 +7,6 @@
     "DB_PASS": "password",
     "DB_NAME": "sbtest"
   },
-  "mysql_8_threads": {
-    "DRIVER": "mysql",
-    "DB_HOST": "127.0.0.1",
-    "DB_PORT": "3306",
-    "DB_USER": "root",
-    "DB_PASS": "password",
-    "DB_NAME": "sbtest",
-    "CUSTOM_THREADS": 8
-  },
   "postgres": {
     "DRIVER": "pgsql",
     "DB_HOST": "127.0.0.1",
@@ -31,8 +22,7 @@
     "DB_USER": "root",
     "DB_PASS": "password",
     "DB_NAME": "sbtest",
-    "REPLICAS_COUNT": 3,
-    "CUSTOM_THREADS": 2
+    "REPLICAS_COUNT": 3
   },
   "mysql_master_slave_less_replicas": {
     "DRIVER": "mysql",

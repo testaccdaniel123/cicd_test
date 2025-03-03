@@ -16,10 +16,13 @@ Untersucht werden:
 - Unterschiedliche Abfragen (group by, count, range comparison etc.) auf den beiden Tabellen
 - Für string werden auch update durchgeführt und verglichen
 
+## Durchführung: Ausführung des Benchmarks
+Führe die folgenden Scripts aus, um die Benchmarks mit den korrekten Pfaden und Parametern zu starten.
+
 ### Code für Number Größenvergleich:
 ```bash
 cd ../../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Output" \
   -var '{"datatyp":["smallint_13","smallint_16","mediumint_24","int_32","bigint_64","decimal_65"]}' \
@@ -30,18 +33,10 @@ cd Tools
   }'
 ```
 
-### Nur Graphen erstellen für Number Größenvergleich (log und csv- files müssen schon bestehen)
-```bash
-cd ../../..
-cd Tools
-./generate_graph.sh \
-  YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Output
-```
-
 ### Code für String Größenvergleich:
 ```bash
 cd ../../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Output" \
   -var '{"typ":["char_4","char_64","varchar_4","varchar_64"],"num_rows":[250]}' \
@@ -52,10 +47,10 @@ cd Tools
   }'
 ```
 
-### Code für Anteil der einfügten Zeichen bei Länge von 255:
+### Code für das Aktualisierung von String - Typen:
 ```bash
 cd ../../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
 -out "YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Output" \
 -var '{"typ":["char_255","varchar_255"],"length":[56,240],"num_rows":[250]}' \
@@ -70,15 +65,10 @@ cd Tools
   }'
 ```
 
-### Nur Graphen erstellen für String - Größenvergleich (log und csv- files müssen schon bestehen)
+### Nur Graphen erstellen für den Vergleich von numerischen- und Zeichenketten-Typen (log und csv- files müssen schon bestehen)
 ```bash
 cd ../../..
-cd Tools
+cd Tools/Shell-Scripts
 ./generate_graph.sh \
   YOUR_PATH_TO_PROJECT/Projects/Data_Types/Smaller/Output
 ```
-
-#### Notes
-Allgemein gilt bei Datentypen, dass kleiner besser ist, weshalb man den kleinstmöglichen Datentypen wählen sollte, den man speichern kann und der die vorhandenen Daten entsprechend repräsentieren kann.
-Dadurch wird weniger Speicherplatz (In-Memory und CPU-Cache) in Anspruch genommen, weshalb die Abfragen meistens schneller sind.
-Ein weiterer Vorteil, der für die Benutzung von kleinstmöglichen Typen spricht, ist die einfache Typveränderung, wenn man die vorhandenen Daten falsch eingeschätzt hat und nachträglich ein größerer Datentyp benötigt wird.
