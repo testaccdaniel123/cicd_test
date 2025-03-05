@@ -26,25 +26,43 @@
       "./Projects/Index/B_Tree/Scripts/query_differences": {}
     }
   },
+  "b-tree-query-differences-no-index": {
+    "scripts": {
+      "./Projects/Index/B_Tree/Scripts/query_differences": {
+        "vars": "no"
+      }
+    },
+    "var": {"no":["index"]}
+  },
   "selectivity-change": {
     "scripts": {
-      "./Projects/Index/Hash/Scripts/selectivity_changes": {"vars": "length"}
+      "./Projects/Index/Hash/Scripts/selectivity_changes": {"vars": "prob"}
     },
-    "var": {"length": [10, 100, 500]}
+    "var": {"prob":[25,10,5,1]}
   },
   "hash-query-differences": {
     "scripts": {
       "./Projects/Index/Hash/Scripts/query_differences": {}
     }
   },
+  "hash-query-differences-no-index": {
+    "scripts": {
+      "./Projects/Index/Hash/Scripts/query_differences": {
+        "vars": "no"
+      }
+    },
+    "var": {"no":["index"]}
+  },
   "join-type": {
     "scripts": {
       "./Projects/Join_Typ/Scripts/varchar_queries": {
         "vars": "length"
       },
-      "./Projects/Join_Typ/Scripts/int_queries": {}
+      "./Projects/Join_Typ/Scripts/int_queries": {
+        "vars": "length"
+      }
     },
-    "var": {"length": [1, 64]}
+    "var": {"length": [4, 16]}
   },
   "null-check": {
     "scripts": {

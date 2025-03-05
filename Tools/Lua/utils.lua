@@ -1,7 +1,13 @@
 local utils = {}
 
+function utils.randomNumber(length)
+    local min = 10^(length - 1)
+    local max = 10^length - 1
+    return math.random(min, max)
+end
+
 function utils.randomString(length)
-    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     local result = ""
     for i = 1, length do
         local randIndex = math.random(1, #charset)
@@ -10,25 +16,34 @@ function utils.randomString(length)
     return result
 end
 
-function utils.print_results(con, query)
-    result = con:query(query)
-    io.stderr:write("----------------------"  .. " START PRINTING " .. "----------------------" .. "\n")
-    io.stderr:write("Executed Query: "  .. query:gsub("%s+", " ") .. "\n")
+function utils.print_results(con, query, custom)
+    local result = con:query(query)
+    local query_line = "Executed Query: " .. query:gsub("%s+", " ")
+    local is_count_query = string.find(query, "COUNT%(%*%)") ~= nil
 
-    if result and result.nrows > 0 then
-        for i = 1, result.nrows do
-            local row = result:fetch_row()
-            local output_string = ""
-            for j = 1, #row do
-                output_string = output_string .. tostring(row[j])
-                if j < #row then
-                    output_string = output_string .. ";"
+    if is_count_query then
+        local row = (result and result.nrows > 0 and result:fetch_row()) or {"error"}
+        local output_string = table.concat(row, ";")
+        io.stderr:write(query_line .. ";" .. string.format("CustomName:%s", custom) .. ";CountValue:" .. output_string .. "\n")
+    else
+        io.stderr:write("---------------------- START PRINTING ----------------------\n")
+        io.stderr:write(query_line .. "\n")
+
+        if result and result.nrows > 0 then
+            for i = 1, result.nrows do
+                local row = result:fetch_row()
+                local output_string = ""
+                for j = 1, #row do
+                    output_string = output_string .. tostring(row[j])
+                    if j < #row then
+                        output_string = output_string .. ";"
+                    end
                 end
+                io.stderr:write(output_string .. "\n")
             end
-            io.stderr:write(output_string .. "\n")
         end
+        io.stderr:write("----------------------  END PRINTING  ----------------------\n\n")
     end
-    io.stderr:write("----------------------"  .. "  END PRINTING  " .. "----------------------" .. "\n" .. "\n")
 end
 
 function utils.generate_partition_definition_by_year(start_year, end_year, step, use_range_columns)

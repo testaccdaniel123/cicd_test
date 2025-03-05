@@ -1,23 +1,32 @@
 # Performance von Partitioning
+
 ## Beschreibung
+
+Es wird der Performance - Unterschied zwischen unterschiedlichen den Partitionstypen (Range, List, Hash und Key) analysiert.
+Für die Typen Range, List und Hash gibt es jweils einen Vergleich mit Partition vs ohne Partition.
+Und dann gibt es noch einen Vergleich zwischen RANGE COLUMNS und RANGE und einen Vergleich zwischen Hash und Key-Partitioning.
 
 ## Datenbankstruktur
 
+Das Projekt verwendet zwei Tabellen: **KUNDE** und **BESTELLUNG**.
+Es gibt teilweise leichte Anpassungen für die jeweiligen Tabellen (je nach Typ).
+Außerdem wird auch der Primärschlüssel der Kundentabelle verändert und es werden keine Foreign Constraints definiert.
+
 ## Zielsetzung
 Untersucht werden:
-- **Join-Performance**: Wie beeinflusst der FK-Datentyp die Geschwindigkeit von Join-Abfragen?
-- **Insert-Performance**: Wie wirken sich FK-Typen auf die Geschwindigkeit von Insert-Operationen aus?
-
-Die Ergebnisse helfen, fundierte Entscheidungen zur Datenbankgestaltung zu treffen.
+- **RANGE COLUMNS vs RANGE**: Gibt es einen Unterschied in der Performance oder sind beide gleich? 
+- **HASH vs KEY - Partitioning**: Gibt es einen Unterschied in der Performance oder sind beide gleich?
+- **RANGE-Partitioning vs without**: Mit welchen Operatoren funktioniert Pruning besser/schlechter (für Zeitabfragem) und wie ist der Vergleich mit einer nicht partitionierten Tabelle
+- **LIST-Partitioning vs without**: Mit welchen Operatoren funktioniert Pruning besser/schlechter (ein Land oder mehrere) und wie ist der Vergleich mit einer nicht partitionierten Tabelle
+- **KEY-Partitionierung**: Wie verhält sich die Key-Partitionierung mit einer unterschiedlichen Anzahl an Partitionen (5, 50, 500) und wie ist der Vergleich mit einer nicht partitionierten Tabelle
 
 ## Durchführung: Ausführung des Benchmarks
-
-Führe das folgende Script aus, um die Benchmarks mit den korrekten Pfaden und Parametern auszuführen.
+Führe die folgenden Scripts aus, um die Benchmarks mit den korrekten Pfaden und Parametern zu starten.
 
 ### Code für Range-Partitionierung:
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
   -scripts '{
@@ -31,7 +40,7 @@ cd Tools
 ### Code für Range-Partitionierung-Vergleich zwischen RANGE COLUMNS and only RANGE (nicht in CI/CD enthalten, also pattern.json):
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
   -var '{"type":["range_columns","only_range"]}' \
@@ -46,7 +55,7 @@ cd Tools
 ### Code für Hash-Partitionierung mit Range:
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
   -var '{"partitions_size":[5,50,500]}' \
@@ -63,7 +72,7 @@ cd Tools
 ### Vergleich zwischen Hash-und Key-Partitionierung (nicht in CI/CD enthalten, also pattern.json):
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
   -var '{"type":["hash","key"],"partitions_size":[5,100]}' \
@@ -77,7 +86,7 @@ cd Tools
 ### Code für List-Partitionierung:
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./sysbench_script.sh \
   -out "YOUR_PATH_TO_PROJECT/Projects/Partition/Output" \
   -scripts '{
@@ -90,7 +99,7 @@ cd Tools
 
 ```bash
 cd ../..
-cd Tools
+cd Tools/Shell-Scripts
 ./generate_graph.sh \
   YOUR_PATH_TO_PROJECT/Projects/Partition/Output
 ```

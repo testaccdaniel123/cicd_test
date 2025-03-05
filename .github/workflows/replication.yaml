@@ -30,16 +30,16 @@ jobs:
 
       - name: Run sysbench script
         run: |
-          chmod +x Tools/sysbench_script.sh
+          chmod +x Tools/Shell-Scripts/sysbench_script.sh
           
-          Tools/sysbench_script.sh \
+          Tools/Shell-Scripts/sysbench_script.sh \
           -out "./Projects/Replication/Output" \
           -scripts '{
            "./Projects/Replication/Scripts/int_queries": {
              "db": ["mysql_master_slave"]
            }
           }'
-          
+
       - name: Cleanup MySQL containers
         run: |
           docker ps -q -f name=mysql-primary | xargs -r docker stop | xargs -r docker rm
@@ -50,5 +50,5 @@ jobs:
       - name: Upload test outputs
         uses: actions/upload-artifact@v4
         with:
-          name: "daniel-test-123"
+          name: "replication-output"
           path: "./Projects/Replication/Output"

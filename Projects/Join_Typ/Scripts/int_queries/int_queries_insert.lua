@@ -1,20 +1,22 @@
 local con = sysbench.sql.driver():connect()
+package.path = package.path .. ";" .. debug.getinfo(1).source:match("@(.*)"):match("(.*/)") .. "../../../../Tools/Lua/?.lua"
+local utils = require("utils")
+
+local length = tonumber(os.getenv("LENGTH")) or 0
+
 local num_rows = 700
 local bestellungProKunde = 3
 
 function delete_data()
-    local delete_bestellung_query = "DELETE FROM BESTELLUNGMITID;"
-    local delete_kunden_query = "DELETE FROM KUNDENMITID;"
-    con:query("START TRANSACTION")
-    con:query(delete_bestellung_query)
-    con:query(delete_kunden_query)
-    con:query("COMMIT")
+    con:query("DELETE FROM BESTELLUNGMITID;")
+    con:query("DELETE FROM KUNDENMITID;")
 end
+
 -- Function to insert randomized data into KUNDENMITID and BESTELLUNGMITID
 function insert_data()
     delete_data()
     for i = 1, num_rows do
-        local kunden_id = i
+        local kunden_id = i .. utils.randomNumber(length - #tostring(num_rows))
         local name = string.format("Kunde_%d", i)
         local geburtstag = string.format("19%02d-%02d-%02d", math.random(50, 99), math.random(1, 12), math.random(1, 28))
         local adresse = string.format("Address_%d", i)
@@ -26,7 +28,7 @@ function insert_data()
 
         -- Insert into KUNDENMITID, ignoring duplicates
         local kunden_query = string.format([[
-            INSERT IGNORE INTO KUNDENMITID
+            INSERT INTO KUNDENMITID
             (KUNDEN_ID, NAME, GEBURTSTAG, ADRESSE, STADT, POSTLEITZAHL, LAND, EMAIL, TELEFONNUMMER)
             VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');
         ]], kunden_id, name, geburtstag, adresse, stadt, postleitzahl, land, email, telefonnummer)
@@ -41,7 +43,7 @@ function insert_data()
             local umsatz = math.random(100, 1000)
             -- Insert into BESTELLUNGMITID, referencing KUNDEN_ID
             local bestellung_query = string.format([[
-                INSERT IGNORE INTO BESTELLUNGMITID
+                INSERT INTO BESTELLUNGMITID
                 (BESTELLUNG_ID, BESTELLDATUM, ARTIKEL_ID, FK_KUNDEN, UMSATZ)
                 VALUES (%d,'%s', %d, %d, %d);
             ]], bestellung_id, bestelldatum, artikel_id, kunden_id, umsatz)
