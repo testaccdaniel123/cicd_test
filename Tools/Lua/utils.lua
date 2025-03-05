@@ -1,7 +1,13 @@
 local utils = {}
 
+function utils.randomNumber(length)
+    local min = 10^(length - 1)
+    local max = 10^length - 1
+    return math.random(min, max)
+end
+
 function utils.randomString(length)
-    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     local result = ""
     for i = 1, length do
         local randIndex = math.random(1, #charset)

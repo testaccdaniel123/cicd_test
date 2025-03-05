@@ -13,6 +13,7 @@ base_folder="$1"
 index_name="$2"
 log_folder="$base_folder/logs"
 result_file="$base_folder/count_results.csv"
+explain_file="$base_folder/count_results_explain.csv"
 
 temp_file=$(mktemp)
 head -n 1 "$result_file" | sed 's/$/,Index/' > "$temp_file"
@@ -28,5 +29,5 @@ tail -n +2 "$result_file" | while IFS=, read -r logfile count_value; do
     echo "$logfile,$count_value,$index_used" >> "$temp_file"
 done
 
-mv "$temp_file" "$result_file"
-echo "Das Script wurde ausgeführt. Die Datei '$result_file' wurde aktualisiert."
+mv "$temp_file" "$explain_file"
+echo "Das Script wurde ausgeführt. Die Datei '$explain_file' wurde erstellt."

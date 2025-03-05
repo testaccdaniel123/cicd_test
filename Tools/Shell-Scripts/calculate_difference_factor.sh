@@ -1,5 +1,5 @@
 #!/bin/bash
-# ./calculate_difference_factor.sh YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/b-tree-query-differences/count_results.csv YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/b-tree-query-differences/sysbench_statistics.csv YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/b-tree-query-differences-no-index/sysbench_statistics.csv
+# ./calculate_difference_factor.sh YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/b-tree-query-differences/count_results_explain.csv YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/b-tree-query-differences/sysbench_statistics.csv YOUR_PATH_TO_PROJECT/Projects/Index/B_Tree/Output/b-tree-query-differences-no-index/sysbench_statistics.csv
 
 # Überprüfen, ob die notwendigen Argumente (CSV-Dateien) übergeben wurden
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
@@ -9,15 +9,16 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
 fi
 
 # Definitionen
-result_file="$1"
+explain_file="$1"
 zaehler_file="$2"
 nenner_file="$3"
+factor_file="$(dirname "$explain_file")/count_results_index_factor.csv"
 
 temp_file=$(mktemp)
-head -n 1 "$result_file" | sed 's/$/,Faktor/' > "$temp_file"
+head -n 1 "$explain_file" | sed 's/$/,Factor/' > "$temp_file"
 
 # Gehe durch jede Zeile der result-Datei, ab der dritten Zeile
-tail -n +2 "$result_file" | while IFS=, read -r log_file count_value index; do
+tail -n +2 "$explain_file" | while IFS=, read -r log_file count_value index; do
     script_name=$(echo "$log_file" | sed 's/.*_select_//')
     zaehler_read_value=$(awk -F',' -v script="$script_name" '$1 ~ script {print $2}' "$zaehler_file")
     nenner_read_value=$(awk -F',' -v script="$script_name" '$1 ~ script {print $2}' "$nenner_file")
@@ -31,5 +32,5 @@ tail -n +2 "$result_file" | while IFS=, read -r log_file count_value index; do
     echo "$log_file,$count_value,$index,$result" >> "$temp_file"
 done
 
-mv "$temp_file" "$result_file"
-echo "Das Script wurde ausgeführt. Die Datei '$result_file' wurde aktualisiert."
+mv "$temp_file" "$factor_file"
+echo "Das Script wurde ausgeführt. Die Datei '$factor_file' wurde erstellt."
